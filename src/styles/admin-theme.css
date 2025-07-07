@@ -34,10 +34,34 @@
 }
 
 /* Estilos base para el backoffice */
+.admin-layout, .admin-layout * {
+  font-family: 'Inter', 'Lato', 'Roboto', 'Open Sans', 'Montserrat', system-ui, -apple-system, sans-serif !important;
+  box-sizing: border-box;
+}
+
 .admin-layout {
-  background-color: var(--admin-bg-dark);
-  color: var(--admin-text-primary);
+  background-color: var(--admin-bg-dark) !important;
+  color: var(--admin-text-primary) !important;
   min-height: 100vh;
+}
+
+.admin-layout h1, .admin-layout h2, .admin-layout h3, .admin-layout h4, .admin-layout h5, .admin-layout h6 {
+  color: var(--admin-text-primary) !important;
+  font-family: 'Inter', 'Lato', 'Roboto', 'Open Sans', 'Montserrat', system-ui, -apple-system, sans-serif !important;
+}
+
+.admin-layout input, .admin-layout select, .admin-layout textarea {
+  background-color: var(--admin-bg-medium) !important;
+  color: var(--admin-text-primary) !important;
+  border: 1px solid var(--admin-border) !important;
+}
+
+.admin-layout label {
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-layout table th, .admin-layout table td {
+  color: var(--admin-text-primary) !important;
 }
 
 /* Tarjetas y contenedores */
@@ -56,21 +80,21 @@
 
 /* Encabezados */
 .admin-heading-1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.25rem !important;
+  font-weight: 700;
   color: var(--admin-text-primary);
   margin-bottom: 0.5rem;
 }
 
 .admin-heading-2 {
-  font-size: 1.25rem;
+  font-size: 1.05rem !important;
   font-weight: 600;
   color: var(--admin-text-primary);
   margin-bottom: 0.5rem;
 }
 
 .admin-heading-3 {
-  font-size: 1.125rem;
+  font-size: 0.95rem !important;
   font-weight: 600;
   color: var(--admin-text-primary);
   margin-bottom: 0.5rem;
@@ -430,4 +454,17 @@
   justify-content: flex-end;
   gap: 0.75rem;
   background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+}
+
+.admin-layout .admin-card, .admin-layout .admin-table, .admin-layout .admin-btn, .admin-layout .admin-sidebar-link, .admin-layout .admin-stat-value, .admin-layout .admin-stat-label {
+  font-size: 0.89rem !important;
+}
+
+.admin-layout .admin-sidebar h1 {
+  font-size: 0.8rem !important;
+  font-weight: 600;
+}
+
+.admin-layout .admin-sidebar span, .admin-layout .admin-sidebar-link {
+  font-size: 0.89rem !important;
 }

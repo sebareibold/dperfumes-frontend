@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import {
   Mail,
   Phone,
@@ -15,11 +14,12 @@ import {
   Linkedin,
   Github,
   Globe,
+  Sparkles,
+  Star,
 } from "lucide-react"
 import { useState } from "react"
 import { apiService } from "../../services/api"
 
-// NUEVO: Interfaz para el contenido de contacto
 interface ContactContent {
   mainTitle: string
   subtitle: string
@@ -46,7 +46,6 @@ interface ContactSectionProps {
   content: ContactContent | undefined
 }
 
-// Mapeo de nombres de iconos a componentes Lucide React para la previsualización
 const iconMap: { [key: string]: React.ElementType } = {
   Mail: Mail,
   Phone: Phone,
@@ -54,12 +53,11 @@ const iconMap: { [key: string]: React.ElementType } = {
   Clock: Clock,
   Instagram: Instagram,
   Facebook: Facebook,
-  X: X, // Twitter
+  X: X,
   Youtube: Youtube,
   Linkedin: Linkedin,
   Github: Github,
   Globe: Globe,
-  // Añade más iconos de redes sociales si es necesario
 }
 
 export default function ContactSection({ content }: ContactSectionProps) {
@@ -76,10 +74,10 @@ export default function ContactSection({ content }: ContactSectionProps) {
 
   if (!content) {
     return (
-      <section id="contact" className="py-24 lg:py-32 bg-[#f7f3ee]">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-20 lg:py-32 bg-[var(--background-main)]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-lg text-[#bfa77a]">Contenido de contacto no disponible</p>
+            <p className="text-lg text-[var(--accent-gold)]">Contenido de contacto no disponible</p>
           </div>
         </div>
       </section>
@@ -104,14 +102,14 @@ export default function ContactSection({ content }: ContactSectionProps) {
 
     setIsSubmitting(true)
     setError("")
-    setSuccessMessage("") // Limpiar mensaje de éxito anterior
+    setSuccessMessage("")
 
     try {
       const response = await apiService.sendContactForm(formData)
 
       if (response.success) {
         setFormData({ name: "", email: "", phone: "", subject: "", message: "" })
-        setSuccessMessage(content.responseMessage) // Usar mensaje dinámico
+        setSuccessMessage(content.responseMessage)
       } else {
         throw new Error(response.error || "Error enviando el mensaje")
       }
@@ -120,171 +118,145 @@ export default function ContactSection({ content }: ContactSectionProps) {
       setError("Error enviando el mensaje. Por favor intenta nuevamente.")
     } finally {
       setIsSubmitting(false)
-      setTimeout(() => setSuccessMessage(""), 5000) // Limpiar mensaje de éxito después de 5 segundos
+      setTimeout(() => setSuccessMessage(""), 5000)
     }
   }
 
   return (
-    <section id="contact" className="py-24 lg:py-32 bg-[#f7f3ee]">
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-20">
-          <p className="text-sm uppercase tracking-[0.3em] font-medium mb-6 text-[#bfa77a]">
-            {content.subtitle}
-          </p>
-          <h2 className="font-serif text-4xl lg:text-5xl font-light mb-8 tracking-wide text-[#2d2a26]">
-            {content.mainTitle}
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Información de contacto y redes */}
-          <div className="space-y-10">
-            <div className="mb-10">
-              <h3 className="font-serif text-2xl font-light mb-4 text-[#2d2a26]">Información de Contacto</h3>
-              <p className="text-base text-[#2d2a26] font-light leading-relaxed max-w-md">{content.description}</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {content.contactInfo.map((info) => {
-                const IconComponent = iconMap[info.icon] || Mail
-                return (
-                  <div key={info.title} className="p-5 rounded-xl shadow bg-white flex flex-col items-start border border-[#e5dfd6]">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#bfa77a]">
-                      <IconComponent className="h-5 w-5 text-white" />
-                    </div>
-                    <h4 className="font-serif text-base font-medium mb-2 text-[#2d2a26]">{info.title}</h4>
-                    <div className="space-y-1 mb-2">
-                      {info.details.map((detail, idx) => (
-                        <p key={idx} className="text-sm text-[#2d2a26]">{detail}</p>
-                      ))}
-                    </div>
-                    {info.description && (
-                      <p className="text-xs font-light text-[#bfa77a]">{info.description}</p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            {/* Redes sociales */}
-            <div className="p-6 rounded-xl shadow bg-[#ede6db] border border-[#e5dfd6] flex flex-col items-start">
-              <h4 className="font-serif text-lg font-light mb-4 text-[#2d2a26]">Síguenos en redes sociales</h4>
-              <div className="flex space-x-4">
-                {content.socialMedia.map((social) => {
-                  const SocialIconComponent = iconMap[social.icon] || Globe
+    <section className="py-20 lg:py-32 bg-[var(--background-main)] flex justify-center items-center">
+      <div className="max-w-5xl w-full mx-auto bg-white rounded-2xl shadow-elegant overflow-hidden flex flex-col md:flex-row items-center justify-center min-h-[420px]">
+        {/* Tarjeta de información de contacto tipo squircle */}
+        <div className="flex flex-col items-center justify-center w-full md:w-1/2 h-full">
+          <div className="bg-[var(--primary-dark)] rounded-[32px] p-10 flex flex-col justify-between items-start w-[90%] h-[95%] min-h-[650px] max-w-[550px] mx-auto my-8 relative">
+            {/* Círculo decorativo */}
+     
+            <div className="relative z-10 w-full">
+              <h3 className="text-xl font-bold text-white mb-4">Información de Contacto</h3>
+              <p className="text-white/80 text-sm mb-8">{content.description}</p>
+              <div className="space-y-6 mb-8">
+                {content.contactInfo.map((info, idx) => {
+                  const IconComponent = iconMap[info.icon] || Mail
                   return (
-                    <a
-                      key={social.name}
-                      href={social.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center p-3 rounded-lg border border-[#e5dfd6] bg-white hover:bg-[#f7f3ee] transition-colors"
-                    >
-                      <SocialIconComponent className="h-6 w-6 mb-1 text-[#bfa77a]" />
-                      <span className="text-xs text-[#2d2a26]">{social.name}</span>
-                    </a>
+                    <div key={info.title} className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-[10] h-10 flex items-center justify-center rounded-full bg-[var(--primary-dark-alt)]">
+                        <IconComponent className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold text-base mb-1">{info.title}</h4>
+                        {info.details.map((detail, i) => (
+                          <p key={i} className="text-white/80 text-sm leading-tight">{detail}</p>
+                        ))}
+                        {info.description && <p className="text-xs text-[var(--accent-gold)] mt-1">{info.description}</p>}
+                      </div>
+                    </div>
                   )
                 })}
+                       <div className="absolute bg-conic-30 -bottom-30 right-0 w-32 h-32 bg-[var(--primary-dark-alt)] opacity-40 rounded-full -mb-10 -mr-10"></div>
               </div>
-            </div>
-          </div>
-          {/* Formulario de contacto */}
-          <div className="p-8 lg:p-12 rounded-xl shadow bg-white border border-[#e5dfd6]">
-            <h3 className="font-serif text-2xl font-light mb-6 text-[#2d2a26]">{content.formTitle}</h3>
-            {error && (
-              <div className="mb-6 p-4 rounded-xl bg-[#fee2e2] text-[#dc2626]">{error}</div>
-            )}
-            {successMessage && (
-              <div className="mb-6 p-4 rounded-xl bg-[#d1fae5] text-[#065f46]">{successMessage}</div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label htmlFor="name" className="block text-xs font-medium mb-2 text-[#2d2a26]">Nombre *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-[#e5dfd6] bg-[#f7f3ee] text-[#2d2a26] focus:outline-none focus:ring-2 focus:ring-[#bfa77a]"
-                    placeholder="Tu nombre completo"
-                  />
+              {/* Redes sociales */}
+              {content.socialMedia && content.socialMedia.length > 0 && (
+                <div className="mt-8">
+                  <h4 className="text-white font-semibold text-base mb-3">Redes Sociales</h4>
+                  <div className="flex flex-row gap-4">
+                    {content.socialMedia.map((sm, idx) => {
+                      const IconComponent = iconMap[sm.icon] || Mail
+                      return (
+                        <a
+                          key={sm.name}
+                          href={sm.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-[var(--primary-dark-alt)] p-2 rounded-full hover:bg-[var(--accent-gold)] transition-all duration-300 hover:scale-110"
+                        >
+                          <IconComponent className="h-5 w-5 text-white" />
+                        </a>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="phone" className="block text-xs font-medium mb-2 text-[#2d2a26]">Teléfono</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-[#e5dfd6] bg-[#f7f3ee] text-[#2d2a26] focus:outline-none focus:ring-2 focus:ring-[#bfa77a]"
-                    placeholder="Tu número de teléfono"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-xs font-medium mb-2 text-[#2d2a26]">Correo electrónico *</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-[#e5dfd6] bg-[#f7f3ee] text-[#2d2a26] focus:outline-none focus:ring-2 focus:ring-[#bfa77a]"
-                  placeholder="tu@email.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="subject" className="block text-xs font-medium mb-2 text-[#2d2a26]">Asunto *</label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  required
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-[#e5dfd6] bg-[#f7f3ee] text-[#2d2a26] focus:outline-none focus:ring-2 focus:ring-[#bfa77a]"
-                  placeholder="¿En qué podemos ayudarte?"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-xs font-medium mb-2 text-[#2d2a26]">Mensaje *</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  required
-                  rows={6}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-[#e5dfd6] bg-[#f7f3ee] text-[#2d2a26] focus:outline-none focus:ring-2 focus:ring-[#bfa77a] resize-none"
-                  placeholder={content.formDescription}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-4 rounded-lg text-white font-serif text-base font-light shadow transition-all duration-300 bg-[#2d2a26] hover:bg-[#bfa77a] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Enviando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-5 w-5" />
-                    <span>Enviar mensaje</span>
-                  </>
-                )}
-              </button>
-            </form>
-            <div className="mt-8 p-4 rounded-lg bg-[#f7f3ee]">
-              <p className="text-xs font-light text-center text-[#2d2a26]">{content.responseDisclaimer}</p>
+              )}
             </div>
           </div>
         </div>
+        {/* Formulario de contacto */}
+        <form
+          className="bg-white p-10 flex flex-col justify-center gap-6 w-full md:w-1/2"
+          onSubmit={handleSubmit}
+          autoComplete="off"
+        >
+          <h3 className="font-serif text-2xl font-bold text-[var(--primary-dark)] mb-2">{content.formTitle}</h3>
+          <p className="text-[var(--text-aux)] text-sm mb-4">{content.formDescription}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Nombre Completo *</label>
+              <input
+                type="text"
+                name="name"
+                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Tu nombre"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Email *</label>
+              <input
+                type="email"
+                name="email"
+                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="tucorreo@email.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Teléfono</label>
+              <input
+                type="tel"
+                name="phone"
+                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="Opcional"
+              />
+            </div>
+            <div>
+              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Asunto *</label>
+              <input
+                type="text"
+                name="subject"
+                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                value={formData.subject}
+                onChange={handleInputChange}
+                placeholder="Motivo del mensaje"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Mensaje *</label>
+            <textarea
+              name="message"
+              className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 min-h-[100px] transition-all"
+              value={formData.message}
+              onChange={handleInputChange}
+              placeholder="Escribe tu mensaje..."
+              required
+            />
+          </div>
+          {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
+          {successMessage && <p className="text-green-600 text-sm font-medium">{successMessage}</p>}
+          <button
+            type="submit"
+            className="mt-2 border-2 border-[var(--primary-dark)] text-[var(--primary-dark)] bg-transparent px-8 py-3 rounded-[var(--radius-btn)] font-semibold uppercase tracking-wide transition-all duration-300 hover:bg-[var(--primary-dark)] hover:text-[var(--neutral-white)] shadow-none"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Enviando..." : "Enviar Mensaje"}
+          </button>
+          <p className="text-xs text-[var(--text-aux)] mt-2">{content.responseDisclaimer}</p>
+        </form>
       </div>
     </section>
   )

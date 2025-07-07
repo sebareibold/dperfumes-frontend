@@ -3,9 +3,6 @@
 import HeroSection from "../../components/home/HeroSection"
 import ProductCatalog from "../../components/home/ProductCatalog"
 import ContactSection from "../../components/home/ContactSection"
-import AboutSection from "../../components/home/AboutSection"
-import SignatureScentHighlight from "../../components/home/SignatureScentHighlight"
-import JournalNewsletterSection from "../../components/home/JournalNewsletterSection"
 import {
   Truck,
   Award,
@@ -85,7 +82,6 @@ import {
   Newspaper,
   Package2,
   Paperclip,
-  PenToolIcon as Tool,
   Percent,
   PieChart,
   PiggyBank,
@@ -159,9 +155,7 @@ import {
 import type React from "react"
 import { useState, useEffect } from "react"
 import { apiService } from "../../services/api"
-import { ImageIcon } from "lucide-react"
 
-// Definición de tipos para el contenido
 interface CategoryContent {
   name: string
   display_name: string
@@ -173,7 +167,6 @@ interface ValueContent {
   description: string
 }
 
-// NUEVAS INTERFACES PARA CONTACTO
 interface ContactDetailContent {
   icon: string
   title: string
@@ -194,6 +187,11 @@ interface SiteContent {
     slogan: string
     buttonText: string
     buttonLink: string
+    heroImage?: {
+      url: string
+      alt: string
+      filename: string
+    }
   }
   productCatalog: {
     mainTitle: string
@@ -213,229 +211,220 @@ interface SiteContent {
     formDescription: string
     responseMessage: string
     responseDisclaimer: string
-    contactInfo: ContactDetailContent[] // Nuevo
-    socialMedia: SocialMediaLinkContent[] // Nuevo
+    contactInfo: ContactDetailContent[]
+    socialMedia: SocialMediaLinkContent[]
   }
 }
 
-// Mapeo de nombres de iconos a componentes Lucide React
 const iconMap: { [key: string]: React.ElementType } = {
-  Truck: Truck,
-  Award: Award,
-  Users: Users,
-  Heart: Heart,
-  Star: Star,
-  ShieldCheck: ShieldCheck,
-  Leaf: Leaf,
-  Gem: Gem,
-  Sparkles: Sparkles,
-  Gift: Gift,
-  MessageSquare: MessageSquare,
-  MapPin: MapPin,
-  Phone: Phone,
-  Mail: Mail,
-  Clock: Clock,
-  DollarSign: DollarSign,
-  Package: Package,
-  RefreshCw: RefreshCw,
-  Zap: Zap,
-  Lightbulb: Lightbulb,
-  Handshake: Handshake,
-  Smile: Smile,
-  Palette: Palette,
-  Ruler: Ruler,
-  Tag: Tag,
-  ShoppingCart: ShoppingCart,
-  CreditCard: CreditCard,
-  Lock: Lock,
-  Globe: Globe,
-  Camera: Camera,
-  Book: Book,
-  Briefcase: Briefcase,
-  Calendar: Calendar,
-  CheckCircle: CheckCircle,
-  CircleDollarSign: CircleDollarSign,
-  Cloud: Cloud,
-  Code: Code,
-  Coffee: Coffee,
-  Compass: Compass,
-  Cpu: Cpu,
-  Crosshair: Crosshair,
-  Database: Database,
-  Diamond: Diamond,
-  Dices: Dices,
-  Disc: Disc,
-  Droplet: Droplet,
-  Feather: Feather,
-  Fingerprint: Fingerprint,
-  Flame: Flame,
-  Folder: Folder,
-  Gamepad: Gamepad,
-  Gauge: Gauge,
-  Gavel: Gavel,
-  Ghost: Ghost,
-  GraduationCap: GraduationCap,
-  Grid: Grid,
-  Hammer: Hammer,
-  Headphones: Headphones,
-  HelpCircle: HelpCircle,
-  Home: Home,
-  Image: Image,
-  Inbox: Inbox,
-  Key: Key,
-  Laptop: Laptop,
-  LifeBuoy: LifeBuoy,
-  Link: Link,
-  List: List,
-  Map: Map,
-  Megaphone: Megaphone,
-  Microphone: Microphone,
-  Monitor: Monitor,
-  Moon: Moon,
-  Mouse: Mouse,
-  Music: Music,
-  Navigation: Navigation,
-  Newspaper: Newspaper,
-  Package2: Package2,
-  Paperclip: Paperclip,
-  Percent: Percent,
-  PieChart: PieChart,
-  PiggyBank: PiggyBank,
-  Pin: Pin,
-  Plane: Plane,
-  Plug: Plug,
-  Pocket: Pocket,
-  Power: Power,
-  Printer: Printer,
-  Puzzle: Puzzle,
-  QrCode: QrCode,
-  Quote: Quote,
-  Radio: Radio,
-  Receipt: Receipt,
-  Rocket: Rocket,
-  Rss: Rss,
-  Scale: Scale,
-  Scissors: Scissors,
-  Search: Search,
-  Send: Send,
-  Server: Server,
-  Settings: Settings,
-  Share: Share,
-  Shield: Shield,
-  Ship: Ship,
-  Signal: Signal,
-  Sliders: Sliders,
-  Speaker: Speaker,
-  Square: Square,
-  Sun: Sun,
-  Tablet: Tablet,
-  Target: Target,
-  Tent: Tent,
-  Terminal: Terminal,
-  ThumbsUp: ThumbsUp,
-  Ticket: Ticket,
-  Timer: Timer,
-  ToggleLeft: ToggleLeft,
-  Tool: Tool,
-  Train: Train,
-  TrendingUp: TrendingUp,
-  Trophy: Trophy,
-  Umbrella: Umbrella,
-  Unlock: Unlock,
-  Upload: Upload,
-  User: User,
-  Utensils: Utensils,
-  Vegan: Vegan,
-  Verified: Verified,
-  Video: Video,
-  Voicemail: Voicemail,
-  Volume: Volume,
-  Wallet: Wallet,
-  Wand: Wand,
-  Watch: Watch,
-  Waves: Waves,
-  Webcam: Webcam,
-  Wifi: Wifi,
-  Wind: Wind,
-  Wine: Wine,
-  Wrench: Wrench,
-  X: X,
-  Youtube: Youtube,
-  ZoomIn: ZoomIn,
-  ZoomOut: ZoomOut,
-  Info: Info, // Añadir un icono por defecto si no se encuentra
-  Instagram: Instagram, // Añadido
-  Facebook: Facebook, // Añadido
-  Linkedin: Linkedin, // Añadido
-  Github: Github, // Añadido
+  Truck,
+  Award,
+  Users,
+  Heart,
+  Star,
+  ShieldCheck,
+  Leaf,
+  Gem,
+  Sparkles,
+  Gift,
+  MessageSquare,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  DollarSign,
+  Package,
+  RefreshCw,
+  Zap,
+  Lightbulb,
+  Handshake,
+  Smile,
+  Palette,
+  Ruler,
+  Tag,
+  ShoppingCart,
+  CreditCard,
+  Lock,
+  Globe,
+  Camera,
+  Book,
+  Briefcase,
+  Calendar,
+  CheckCircle,
+  CircleDollarSign,
+  Cloud,
+  Code,
+  Coffee,
+  Compass,
+  Cpu,
+  Crosshair,
+  Database,
+  Diamond,
+  Dices,
+  Disc,
+  Droplet,
+  Feather,
+  Fingerprint,
+  Flame,
+  Folder,
+  Gamepad,
+  Gauge,
+  Gavel,
+  Ghost,
+  GraduationCap,
+  Grid,
+  Hammer,
+  Headphones,
+  HelpCircle,
+  Home,
+  Image,
+  Inbox,
+  Key,
+  Laptop,
+  LifeBuoy,
+  Link,
+  List,
+  Map,
+  Megaphone,
+  Microphone,
+  Monitor,
+  Moon,
+  Mouse,
+  Music,
+  Navigation,
+  Newspaper,
+  Package2,
+  Paperclip,
+  Percent,
+  PieChart,
+  PiggyBank,
+  Pin,
+  Plane,
+  Plug,
+  Pocket,
+  Power,
+  Printer,
+  Puzzle,
+  QrCode,
+  Quote,
+  Radio,
+  Receipt,
+  Rocket,
+  Rss,
+  Scale,
+  Scissors,
+  Search,
+  Send,
+  Server,
+  Settings,
+  Share,
+  Shield,
+  Ship,
+  Signal,
+  Sliders,
+  Speaker,
+  Square,
+  Sun,
+  Tablet,
+  Target,
+  Tent,
+  Terminal,
+  ThumbsUp,
+  Ticket,
+  Timer,
+  ToggleLeft,
+  Train,
+  TrendingUp,
+  Trophy,
+  Umbrella,
+  Unlock,
+  Upload,
+  User,
+  Utensils,
+  Vegan,
+  Verified,
+  Video,
+  Voicemail,
+  Volume,
+  Wallet,
+  Wand,
+  Watch,
+  Waves,
+  Webcam,
+  Wifi,
+  Wind,
+  Wine,
+  Wrench,
+  X,
+  Youtube,
+  ZoomIn,
+  ZoomOut,
+  Info,
+  Instagram,
+  Facebook,
+  Linkedin,
+  Github,
 }
 
-// Componente BrandValues (extraído para claridad)
 function BrandValues({ content }: { content: SiteContent["whyChooseJoly"] | undefined }) {
-  // Validar que content existe y tiene values
   if (!content || !content.values) {
     return (
-      <section className="py-20 lg:py-28" style={{ backgroundColor: "var(--pure-white)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 lg:py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-lg" style={{ color: "var(--oak)" }}>
-              Contenido de valores de marca no disponible
-            </p>
+            <p className="text-lg text-[#bfa77a]">Contenido de valores de marca no disponible</p>
           </div>
         </div>
       </section>
     )
   }
 
-  // Usar los valores del contenido dinámico
-  const values = content.values.map((val) => ({
-    icon: iconMap[val.icon] || Info, // Usar el mapeo de iconos, con Info como fallback
-    title: val.title,
-    description: val.description,
-  }))
-
   return (
-    <section className="py-20 lg:py-28" style={{ backgroundColor: "var(--pure-white)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <p className="text-sm uppercase tracking-[0.3em] font-medium mb-6" style={{ color: "var(--clay)" }}>
-            Por qué elegir Joly
-          </p>
-          <h2
-            className="font-serif text-4xl lg:text-5xl font-light mb-8 tracking-wide"
-            style={{ color: "var(--deep-clay)" }}
-          >
+    <section className="py-20 lg:py-32 bg-white relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-20 left-10 opacity-10">
+        <div className="w-32 h-32 rounded-full bg-[#bfa77a] blur-3xl"></div>
+      </div>
+      <div className="absolute bottom-20 right-10 opacity-10">
+        <div className="w-40 h-40 rounded-full bg-[#2d2a26] blur-2xl"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16 lg:mb-20">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-[#f7f3ee] border border-[#e5dfd6] shadow-lg mb-6">
+            <Award className="h-4 w-4 text-[#bfa77a] mr-2" />
+            <span className="text-sm font-medium text-[#2d2a26] tracking-wide">Por qué elegir Daisy</span>
+          </div>
+
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-[#2d2a26] mb-6 leading-tight">
             {content.mainTitle.split(" ")[0]}{" "}
-            <span className="italic" style={{ color: "var(--clay)" }}>
-              {content.mainTitle.split(" ").slice(1).join(" ")}
-            </span>
+            <span className="text-[#bfa77a] italic">{content.mainTitle.split(" ").slice(1).join(" ")}</span>
           </h2>
-          <p className="font-light leading-relaxed max-w-3xl mx-auto" style={{ color: "var(--dark-clay)" }}>
+
+          <p className="text-lg md:text-xl text-[#2d2a26]/70 font-light leading-relaxed max-w-3xl mx-auto">
             {content.description}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {values.map((value) => (
-            <div
-              key={value.title}
-              className="text-center p-8 rounded-2xl hover:shadow-warm-lg transition-all duration-500 hover:scale-105"
-              style={{ backgroundColor: "var(--creme)" }}
-            >
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {content.values.map((value, index) => {
+            const IconComponent = iconMap[value.icon] || Award
+            return (
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-warm"
-                style={{ backgroundColor: "var(--clay)" }}
+                key={value.title}
+                className="group p-8 bg-gradient-to-br from-[#f7f3ee] to-white rounded-3xl border border-[#e5dfd6]/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 text-center"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <ImageIcon className="h-8 w-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-br from-[#bfa77a] to-[#2d2a26] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <IconComponent className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="font-serif text-xl font-medium mb-4 text-[#2d2a26] group-hover:text-[#bfa77a] transition-colors duration-300">
+                  {value.title}
+                </h3>
+                <p className="text-[#2d2a26]/70 font-light leading-relaxed">{value.description}</p>
               </div>
-              <h3 className="font-serif text-xl font-medium mb-4 tracking-wide" style={{ color: "var(--deep-clay)" }}>
-                {value.title}
-              </h3>
-              <p className="font-light leading-relaxed" style={{ color: "var(--dark-clay)" }}>
-                {value.description}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
@@ -469,59 +458,44 @@ export default function HomePage() {
 
   if (loadingContent) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: "var(--soft-creme)" }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-clay"></div>
-        <p className="ml-3 text-clay">Cargando contenido del sitio...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6]">
+        <div className="text-center">
+          <div className="relative mb-8">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#bfa77a]/20 border-t-[#bfa77a] mx-auto"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-[#bfa77a]/10 mx-auto"></div>
+          </div>
+          <p className="text-[#2d2a26] text-lg font-serif">Cargando experiencia Daisy...</p>
+        </div>
       </div>
     )
   }
 
   if (contentError || !siteContent) {
     return (
-      <div className="text-center py-20" style={{ backgroundColor: "var(--soft-creme)" }}>
-        <p className="text-red-500 text-lg">{contentError || "Contenido no disponible."}</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6] flex items-center justify-center">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl border border-[#e5dfd6] shadow-xl max-w-md mx-auto">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-red-500 text-2xl">⚠</span>
+          </div>
+          <h2 className="font-serif text-xl font-medium text-[#2d2a26] mb-4">Error al cargar contenido</h2>
+          <p className="text-[#2d2a26]/70 mb-6">{contentError || "Contenido no disponible."}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white font-serif rounded-2xl hover:scale-105 transition-transform duration-300"
+          >
+            Reintentar
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <>
+    <div className="overflow-hidden">
       {siteContent.hero && <HeroSection content={siteContent.hero} />}
       {siteContent.productCatalog && <ProductCatalog content={siteContent.productCatalog} />}
-      <AboutSection
-        imageUrl="/perfume-placeholder.png"
-        title="About the Brand"
-        description="Scentaris is a modern fragrance house dedicated to timeless elegance. Our scents are crafted with emotion, elegance, and a whisper of mystery."
-      />
-      <SignatureScentHighlight
-        title="Signature Scent Highlight"
-        description="Introducing / Velour\nA sensual blend of musk is wild rose."
-        highlightTitle="Introducing: Velour"
-        highlightDescription="A sensual blend of musk od wild rose."
-        buttonText="Shop Now"
-        onButtonClick={() => window.location.href = '/#products'}
-      />
       {siteContent.whyChooseJoly && <BrandValues content={siteContent.whyChooseJoly} />}
       {siteContent.contact && <ContactSection content={siteContent.contact} />}
-      <JournalNewsletterSection
-        articles={[
-          {
-            imageUrl: "/perfume-placeholder.png",
-            title: "The Art of Subtle Scents",
-            description: "Discover how to layer and enjoy fragrances for every occasion.",
-          },
-          {
-            imageUrl: "/perfume-placeholder.png",
-            title: "Inspiration Behind the Perfume",
-            description: "Explore the creative process and stories behind our signature scents.",
-          },
-          {
-            imageUrl: "/perfume-placeholder.png",
-            title: "Stay in the scent loop",
-            description: "Exclusive launches, stories, and more delivered to your inbox.",
-          },
-        ]}
-      />
-    </>
+    </div>
   )
 }

@@ -2,18 +2,18 @@
 
 import { NavLink } from "react-router-dom"
 import {
-  Package,
   Settings,
   LogOut,
   Home,
   ShoppingCart,
-  Megaphone,
+  FlaskRound,
   X,
   FileText,
   ChevronLeft,
   ChevronRight,
   User,
   Menu,
+  Sparkles,
 } from "lucide-react"
 import { useAuth } from "../../contexts/AuthContext"
 
@@ -32,9 +32,9 @@ export default function AdminSidebar({
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: Home, exact: true },
-    { name: "Productos", href: "/admin/products", icon: Package },
+    { name: "Perfumes", href: "/admin/products", icon: Sparkles },
     { name: "Órdenes", href: "/admin/orders", icon: ShoppingCart },
-    { name: "Publicidad", href: "/admin/advertising", icon: Megaphone },
+    { name: "Envases", href: "/admin/envases", icon: FlaskRound },
     { name: "Contenido", href: "/admin/content", icon: FileText },
     { name: "Config", href: "/admin/settings", icon: Settings },
   ]
@@ -57,7 +57,7 @@ export default function AdminSidebar({
         <div className="flex items-center space-x-3">
           
           <h1 className="text-white text-lg font-light">
-            Joly Lingerie <span className="font-thin text-gray-400"> Administración</span>
+            Daisy Perfumes <span className="font-thin text-gray-400"> Administración</span>
           </h1>
         </div>
 
@@ -166,8 +166,8 @@ export default function AdminSidebar({
         <div className="flex-1 flex items-center justify-between">
           {/* Logo/Title */}
           <div className={`transition-all duration-300 ${isSidebarCollapsed ? "hidden" : ""}`}>
-            <h1 className="text-white text-xl font-light">
-              Joly Lenceria<span className="font-thin text-gray-400"> Admin</span>
+            <h1 className="text-white font-light" style={{ fontSize: '1rem', lineHeight: '1.2' }}>
+              Daisy Perfumes<span className="font-thin text-gray-400"> Admin</span>
             </h1>
             <div className="w-full h-0.5 bg-gradient-to-r from-blue-600/50 via-purple-600/50 to-emerald-600/50 mt-2 rounded-full"></div>
           </div>

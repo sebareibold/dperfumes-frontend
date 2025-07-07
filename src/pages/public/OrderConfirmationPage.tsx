@@ -229,10 +229,10 @@ export default function OrderConfirmationPage() {
       </head>
       <body>
         <div class="header">
-          <div class="company-name">JOLY LENCERÍA</div>
+          <div class="company-name">DAISY PERFUMES</div>
           <div class="company-info">
             Av. Argentina 123, Neuquén Capital<br>
-            Tel: (0299) 512-3456 | Email: info@jolylenceria.com<br>
+            Tel: (0299) 512-3456 | Email: info@daisyperfumes.com<br>
             CUIT: 30-12345678-9
           </div>
         </div>
@@ -267,8 +267,8 @@ export default function OrderConfirmationPage() {
           <div class="section-title">Información de Transferencia</div>
           <div class="info-box blue">
             <p><span class="text-bold">CBU:</span> 0110599520000012345678</p>
-            <p><span class="text-bold">Alias:</span> JOLY.LINGERIE</p>
-            <p><span class="text-bold">Titular:</span> Joly Lingerie S.A.S.</p>
+            <p><span class="text-bold">Alias:</span> DAISY.PERFUMES</p>
+            <p><span class="text-bold">Titular:</span> Daisy Perfumes S.A.S.</p>
             <p><span class="text-bold">Monto a transferir:</span> $${orderData.total?.toLocaleString("es-AR")}</p>
           </div>
         </div>
@@ -453,10 +453,10 @@ export default function OrderConfirmationPage() {
                             <strong>CBU:</strong> 0110599520000012345678
                           </p>
                           <p>
-                            <strong>Alias:</strong> JOLY.LINGERIE
+                            <strong>Alias:</strong> DAISY.PERFUMES
                           </p>
                           <p>
-                            <strong>Titular:</strong> Joly Lingerie S.A.S.
+                            <strong>Titular:</strong> Daisy Perfumes S.A.S.
                           </p>
                           <p>
                             <strong>CUIT:</strong> 30-12345678-9

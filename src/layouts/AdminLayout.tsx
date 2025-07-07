@@ -72,7 +72,7 @@ const AdminLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="admin-layout min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <AdminSidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={handleSidebarToggle}
@@ -104,7 +104,7 @@ const AdminLayout: React.FC = () => {
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
                     <div className="flex items-center space-x-3 sm:space-x-4">
                       <div>
-                        <h2 className="text-lg sm:text-xl font-bold text-slate-100 mb-1">
+                        <h2 className="text-base sm:text-xl font-bold text-slate-100 mb-1">
                           Estado del Sistema
                         </h2>
                         <p className="text-xs sm:text-sm text-slate-400">

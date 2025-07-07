@@ -2,25 +2,50 @@
 
 import React, { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Save, X, Plus, Upload, Check, AlertTriangle, ChevronLeft, Clock } from "lucide-react"
+import { ArrowLeft, Check, ChevronLeft, Clock } from "lucide-react"
 import { apiService } from "../../services/api"
 import { useAuth } from "../../contexts/AuthContext"
 
 interface ProductForm {
-  title: string
-  description: string
-  price: number | string
-  category: string
+  nombre: string
+  descripcion: string
+  precio: number | string
   stock: number | string
-  size: string[]
-  status: boolean
-  thumbnails: string[]
-  discount: number | string
+  categoria: string
+  volumen: { ml: string; precio: number }[]
+  notasAromaticas: string[]
+  imagenes: string[]
+  descripcionDupe?: string
+  tipo: ("vidrio" | "plastico")[]
+  envases?: string[]
+  estado: boolean
 }
 
 interface Category {
   name: string
   display_name: string
+}
+
+// Notas aromáticas comunes sugeridas
+const NOTAS_COMUNES = [
+  "Floral", "Amaderado", "Cítrico", "Frutal", "Oriental", "Especiado", "Verde", "Acuático", "Dulce", "Polvoroso", "Herbal", "Almizclado", "Gourmand", "Fresco", "Ámbar", "Cuero"
+]
+
+// Función para formatear número a miles con punto y coma decimal
+function formatPrecioES(value: string | number) {
+  if (value === '' || value === null || value === undefined) return ''
+  const [entero, decimal] = String(value).replace(/\./g, ',').split(',')
+  const enteroFormateado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return decimal !== undefined ? `${enteroFormateado},${decimal}` : enteroFormateado
+}
+
+// 1. Definir el tipo Envase
+interface Envase {
+  _id: string;
+  tipo: 'vidrio' | 'plastico';
+  volumen: number;
+  precio: number;
+  stock: number;
 }
 
 export default function AdminProductForm() {
@@ -34,49 +59,44 @@ export default function AdminProductForm() {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [rateLimited, setRateLimited] = useState(false)
   const [form, setForm] = useState<ProductForm>({
-    title: "",
-    description: "",
-    price: "",
-    category: "",
+    nombre: "",
+    descripcion: "",
+    precio: "",
     stock: "",
-    size: [],
-    status: true,
-    thumbnails: [""],
-    discount: 0,
+    categoria: "",
+    volumen: [],
+    notasAromaticas: [],
+    imagenes: [""],
+    descripcionDupe: "",
+    tipo: [],
+    envases: [],
+    estado: true,
   })
 
   const [availableCategories, setAvailableCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [categoriesError, setCategoriesError] = useState<string | null>(null)
 
-  const availableSizes = [
-    // Ropa
-    "XS",
-    "S",
-    "M",
-    "L",
-    "XL",
-    "XXL",
-    // Calzado
-    "35",
-    "36",
-    "37",
-    "38",
-    "39",
-    "40",
-    "41",
-    "42",
-    "43",
-    "44",
-    // Accesorios
-    "Único",
-    "Ajustable",
-    // Relojes/Electrónicos
-    "35mm",
-    "40mm",
-    "42mm",
-    "45mm",
-  ]
+  // Validación visual para notas aromáticas
+  const [notasTouched, setNotasTouched] = useState(false)
+  const notasInvalid = notasTouched && form.notasAromaticas.length === 0
+
+  // Validación visual para categorías
+  const [categoriasTouched, setCategoriasTouched] = useState(false)
+
+  // 2. Usar Envase[] en el estado de envasesDisponibles
+  const [envasesDisponibles, setEnvasesDisponibles] = useState<Envase[]>([])
+  useEffect(() => {
+    async function fetchEnvases() {
+      try {
+        const envs = await apiService.get('/envases')
+        setEnvasesDisponibles(envs as Envase[])
+      } catch (e) {
+        // Opcional: manejar error
+      }
+    }
+    fetchEnvases()
+  }, [])
 
   // Verificar autenticación
   useEffect(() => {
@@ -168,15 +188,22 @@ export default function AdminProductForm() {
             console.log("AdminProductForm - Datos del producto recibidos:", product)
 
             setForm({
-              title: product.title || "",
-              description: product.description || "",
-              price: product.price !== undefined ? String(product.price) : "",
-              category: product.category || "",
+              nombre: product.nombre || "",
+              descripcion: product.descripcion || "",
+              precio: product.precio !== undefined ? String(product.precio) : "",
               stock: product.stock !== undefined ? String(product.stock) : "",
-              size: Array.isArray(product.size) ? product.size : product.size ? [product.size] : [],
-              status: product.status !== undefined ? product.status : true,
-              thumbnails: product.thumbnails && product.thumbnails.length > 0 ? product.thumbnails : [""],
-              discount: product.discount !== undefined ? String(product.discount) : "0",
+              categoria: product.categoria || "",
+              volumen: product.volumen && product.volumen.length > 0 ? product.volumen : product.volumen ? [{ ml: "0", precio: 0 }] : [],
+              notasAromaticas: product.notasAromaticas || [],
+              imagenes: product.imagenes && product.imagenes.length > 0 ? product.imagenes : [""],
+              descripcionDupe: product.descripcionDupe || "",
+              tipo: Array.isArray(product.tipo)
+                ? product.tipo.filter((t: string) => t === "vidrio" || t === "plastico")
+                : product.tipo === "vidrio" || product.tipo === "plastico"
+                ? [product.tipo]
+                : [],
+              envases: product.envases && product.envases.length > 0 ? product.envases : undefined,
+              estado: product.estado !== undefined ? product.estado : true,
             })
             console.log("AdminProductForm - Estado del formulario actualizado")
           } else {
@@ -207,15 +234,18 @@ export default function AdminProductForm() {
       } else if (!isEditing) {
         // Reset form for create mode
         setForm({
-          title: "",
-          description: "",
-          price: "",
-          category: "",
+          nombre: "",
+          descripcion: "",
+          precio: "",
           stock: "",
-          size: [],
-          status: true,
-          thumbnails: [""],
-          discount: "0",
+          categoria: "",
+          volumen: [],
+          notasAromaticas: [],
+          imagenes: [""],
+          descripcionDupe: "",
+          tipo: [],
+          envases: [],
+          estado: true,
         })
       }
     }
@@ -224,57 +254,69 @@ export default function AdminProductForm() {
   }, [id, isEditing, navigate])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-
+    const { name, value } = e.target
+    let newValue: string | number = value
+    if (name === 'precio' || name === 'stock') {
+      // Eliminar puntos y cambiar coma por punto para parsear
+      const clean = value.replace(/\./g, '').replace(',', '.')
+      newValue = clean === '' ? '' : clean
+    }
+    console.log(`AdminProductForm - Cambio en campo '${name}':`, newValue)
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: newValue,
     }))
   }
 
-  const handleThumbnailChange = (index: number, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      thumbnails: prev.thumbnails.map((thumb, i) => (i === index ? value : thumb)),
-    }))
-  }
+  // 1. Agrego estado para la URL de imagen y error
+  const [nuevaImagen, setNuevaImagen] = useState("");
+  const [errorImagen, setErrorImagen] = useState("");
 
-  const addThumbnail = () => {
-    setForm((prev) => ({
-      ...prev,
-      thumbnails: [...prev.thumbnails, ""],
-    }))
-  }
-
-  const removeThumbnail = (index: number) => {
-    if (form.thumbnails.length > 1) {
-      setForm((prev) => ({
-        ...prev,
-        thumbnails: prev.thumbnails.filter((_, i) => i !== index),
-      }))
+  // 2. Función para validar URL
+  function esUrlValida(url: string) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   }
 
+  // 3. Función para agregar imagen
+  const agregarImagen = () => {
+    if (!nuevaImagen.trim()) return;
+    if (!esUrlValida(nuevaImagen)) {
+      setErrorImagen("URL no válida");
+      return;
+    }
+    setForm((prev) => ({ ...prev, imagenes: [...prev.imagenes, nuevaImagen.trim()] }));
+    setNuevaImagen("");
+    setErrorImagen("");
+  };
+
+  // 4. Función para eliminar imagen
+  const eliminarImagen = (index: number) => {
+    setForm((prev) => ({ ...prev, imagenes: prev.imagenes.filter((_, i) => i !== index) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    console.log('AdminProductForm - handleSubmit ejecutado. Form:', form)
     // Validaciones mejoradas
     const errors: string[] = []
 
-    if (!form.title.trim()) errors.push("El título es requerido")
-    if (!form.description.trim()) errors.push("La descripción es requerida")
-    if (!form.category) errors.push("La categoría es requerida")
-    if (!form.price || Number(form.price) <= 0) errors.push("El precio debe ser mayor a 0")
-    if (form.size.length === 0) errors.push("Debe seleccionar al menos una talla")
-    if (form.thumbnails.every((thumb) => !thumb.trim())) errors.push("Debe incluir al menos una imagen")
+    if (!form.nombre.trim()) errors.push("El nombre es requerido")
+    if (!form.descripcion.trim()) errors.push("La descripción es requerida")
+    if (!form.categoria) errors.push("La categoría es requerida")
+    if (form.imagenes.every((thumb) => !thumb.trim())) errors.push("Debe incluir al menos una imagen")
 
     // Validar que la categoría existe
-    if (form.category && !availableCategories.some((cat) => cat.name === form.category)) {
+    if (form.categoria && !availableCategories.some((cat) => cat.name === form.categoria)) {
       errors.push("La categoría seleccionada no es válida")
     }
 
     // Validar URLs de imágenes
-    const invalidImages = form.thumbnails.filter((thumb) => {
+    const invalidImages = form.imagenes.filter((thumb) => {
       if (!thumb.trim()) return false
       try {
         new URL(thumb)
@@ -300,25 +342,31 @@ export default function AdminProductForm() {
     try {
       setSaving(true)
       setRateLimited(false)
-
+      const { tipo, ...formWithoutTipo } = form;
+      console.log('Enviando producto con estado:', typeof form.estado, form.estado);
       const productData = {
-        ...form,
-        price: Number(form.price),
+        ...formWithoutTipo,
+        precio: Number(form.precio),
         stock: Number(form.stock || 0),
-        discount: Number(form.discount || 0),
-        thumbnails: form.thumbnails.filter((thumb) => thumb.trim() !== ""),
+        volumen: form.volumen.map((vol) => ({
+          ml: vol.ml,
+          precio: Number(vol.precio),
+        })),
+        notasAromaticas: form.notasAromaticas,
+        imagenes: form.imagenes.filter((thumb) => thumb.trim() !== ""),
+        descripcionDupe: form.descripcionDupe || "",
+        envases: form.envases || [],
+        estado: !!form.estado,
+        tipo: 'vidrio' as 'vidrio' | 'plastico',
       }
-
-      console.log("AdminProductForm - Enviando datos del producto:", productData)
-
+      console.log('AdminProductForm - handleConfirmSubmit. Datos a enviar:', productData)
       if (isEditing && id) {
-        await apiService.updateProduct(id, productData)
-        console.log("AdminProductForm - Producto actualizado exitosamente")
-      } else {
-        await apiService.createProduct(productData)
-        console.log("AdminProductForm - Producto creado exitosamente")
+        const resp = await apiService.updateProduct(id, productData)
+        console.log('AdminProductForm - Respuesta updateProduct:', resp)
+      } else if (!isEditing) {
+        const resp = await apiService.createProduct(productData)
+        console.log('AdminProductForm - Respuesta createProduct:', resp)
       }
-
       navigate("/admin/products")
     } catch (error: unknown) {
       console.error("AdminProductForm - Error saving product:", error)
@@ -342,6 +390,18 @@ export default function AdminProductForm() {
   const handleCancelConfirmation = () => {
     setShowConfirmation(false)
     setRateLimited(false)
+  }
+
+  // Selección de envases
+  const handleEnvaseChange = (envaseId: string) => {
+    const seleccionado = form.envases?.includes(envaseId)
+    console.log('AdminProductForm - Cambio en envases:', envaseId, seleccionado ? 'Quitar' : 'Agregar')
+    setForm((prev) => ({
+      ...prev,
+      envases: seleccionado
+        ? (prev.envases || []).filter((id) => id !== envaseId)
+        : [...(prev.envases || []), envaseId],
+    }))
   }
 
   // Estados de carga
@@ -378,8 +438,8 @@ export default function AdminProductForm() {
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-white">Confirmar {isEditing ? "Actualización" : "Creación"}</h1>
-                <p className="mt-2 text-gray-400 text-base">
+                <h1 className="font-bold text-white" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>Confirmar {isEditing ? "Actualización" : "Creación"}</h1>
+                <p className="text-gray-400" style={{ fontSize: '0.93rem', lineHeight: '1.2' }}>
                   Por favor revisa los detalles del producto antes de {isEditing ? "actualizar" : "crear"}
                 </p>
               </div>
@@ -393,7 +453,7 @@ export default function AdminProductForm() {
                 <Clock className="h-5 w-5 text-red-500" />
               </div>
               <div>
-                <h4 className="text-red-500 font-medium">Límite de peticiones alcanzado</h4>
+                <h4 className="font-medium" style={{ fontSize: '0.97rem', lineHeight: '1.2', color: '#f87171' }}>Límite de peticiones alcanzado</h4>
                 <p className="text-red-200/70 text-sm">
                   Has realizado demasiadas peticiones en poco tiempo. Por favor, espera 15 minutos antes de intentar
                   nuevamente.
@@ -407,96 +467,181 @@ export default function AdminProductForm() {
             <div className="px-4 sm:px-6 lg:px-8 py-6">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
-                <h3 className="text-lg font-semibold text-white">Resumen del Producto</h3>
+                <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.2' }}>Resumen del Producto</h3>
               </div>
 
               <div className="space-y-6">
                 {/* Basic Information */}
                 <div className="bg-gradient-to-r from-gray-800/30 via-gray-700/20 to-transparent rounded-xl p-6 border border-gray-700/30">
-                  <h4 className="text-base font-medium text-white mb-4">Información Básica</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-400">Título</p>
-                      <p className="text-white font-medium">{form.title}</p>
+                  <h4 className="font-medium text-white mb-4" style={{ fontSize: '0.97rem', lineHeight: '1.2' }}>Información Básica</h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Title - Full Width */}
+                    <div className="lg:col-span-2">
+                      <label htmlFor="nombre" className="block text-sm font-medium text-gray-300 mb-2">
+                        Nombre del Producto *
+                      </label>
+                      <input
+                        type="text"
+                        name="nombre"
+                        id="nombre"
+                        required
+                        className="admin-input"
+                        value={form.nombre ?? ''}
+                        onChange={handleInputChange}
+                        placeholder="Ingresa el nombre del producto"
+                      />
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Categoría</p>
-                      <p className="text-white font-medium">
-                        {availableCategories.find((cat) => cat.name === form.category)?.display_name || form.category}
-                      </p>
+
+                    {/* Description - Full Width */}
+                    <div className="lg:col-span-2">
+                      <label htmlFor="descripcion" className="block text-sm font-medium text-gray-300 mb-2">
+                        Descripción *
+                      </label>
+                      <textarea
+                        name="descripcion"
+                        id="descripcion"
+                        rows={4}
+                        required
+                        className="admin-input resize-none"
+                        value={form.descripcion ?? ''}
+                        onChange={handleInputChange}
+                        placeholder="Describe las características del producto"
+                      />
                     </div>
+
+                    {/* Categoría */}
                     <div>
-                      <p className="text-sm text-gray-400">Precio</p>
-                      <p className="text-white font-medium">${Number(form.price).toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Descuento</p>
-                      <p className="text-white font-medium">{Number(form.discount)}%</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Stock</p>
-                      <p className="text-white font-medium">{form.stock} unidades</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Tallas disponibles</p>
-                      <div className="flex flex-wrap gap-1">
-                        {form.size.map((size, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-300 border border-blue-700"
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Categoría *</label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableCategories.map((category) => (
+                          <button
+                            type="button"
+                            key={category.name}
+                            className={`admin-btn px-3 py-1 rounded-full border text-xs font-medium transition-all duration-150
+                              ${form.categoria === category.name
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                                : "bg-gray-800 text-blue-200 border-gray-600 hover:bg-blue-900/30 hover:border-blue-500"}
+                              ${(form.categoria === '' && categoriasTouched) ? "ring-2 ring-red-500" : ""}`}
+                            style={{ minWidth: 100 }}
+                            onClick={() => {
+                              setForm((prev) => ({ ...prev, categoria: category.name }))
+                              setCategoriasTouched(true)
+                            }}
                           >
-                            {size}
-                          </span>
+                            {category.display_name}
+                          </button>
+                        ))}
+                      </div>
+                      {(form.categoria === '' && categoriasTouched) && (
+                        <p className="text-red-400 text-xs mt-2">Debes seleccionar una categoría</p>
+                      )}
+                    </div>
+
+                    {/* Images */}
+                    <div className="bg-gradient-to-r from-gray-800/30 via-gray-700/20 to-transparent rounded-xl p-6 border border-gray-700/30 mt-8">
+                      <h4 className="font-semibold text-white mb-4" style={{ fontSize: '1rem', lineHeight: '1.2' }}>
+                        Imágenes ({form.imagenes.length})
+                      </h4>
+                      <div className="flex flex-col sm:flex-row gap-4 items-start mb-4">
+                        <input
+                          type="url"
+                          className="admin-input flex-1"
+                          placeholder="Pega la URL de la imagen (https://...)"
+                          value={nuevaImagen}
+                          onChange={e => {
+                            setNuevaImagen(e.target.value);
+                            setErrorImagen("");
+                          }}
+                          onKeyDown={e => { if (e.key === 'Enter') agregarImagen(); }}
+                        />
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-primary px-6 py-2"
+                          onClick={agregarImagen}
+                          disabled={!nuevaImagen.trim() || !esUrlValida(nuevaImagen)}
+                        >
+                          Agregar
+                        </button>
+                      </div>
+                      {errorImagen && <p className="text-red-400 text-xs mb-2">{errorImagen}</p>}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {form.imagenes.length === 0 && (
+                          <p className="text-gray-400 text-center py-4 col-span-full">No hay imágenes disponibles</p>
+                        )}
+                        {form.imagenes.map((thumbnail, index) => (
+                          <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-600 group">
+                            <img
+                              src={thumbnail || "/placeholder.svg"}
+                              alt={`Imagen ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={e => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                            />
+                            <button
+                              type="button"
+                              className="absolute top-2 right-2 bg-red-700/80 hover:bg-red-800 text-white rounded-full p-1 shadow-lg transition-all duration-150 opacity-80 group-hover:opacity-100"
+                              onClick={() => eliminarImagen(index)}
+                              title="Eliminar imagen"
+                            >
+                              ×
+                            </button>
+                          </div>
                         ))}
                       </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Estado</p>
-                      <div className="flex items-center">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            form.status
-                              ? "bg-green-900 text-green-300 border border-green-700"
-                              : "bg-red-900 text-red-300 border border-red-700"
-                          }`}
-                        >
-                          {form.status ? "Activo" : "Inactivo"}
-                        </span>
+
+                    {/* 2. Sección de selección de envases */}
+                    <div className="mt-8">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">¿En qué envases se vende este perfume? *</label>
+                      <div className="flex flex-col gap-2">
+                        {envasesDisponibles.map((envase) => {
+                          const seleccionado = form.envases?.includes(envase._id)
+                          return (
+                            <label
+                              key={envase._id}
+                              className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-150 shadow min-w-[220px] max-w-xl cursor-pointer
+                                ${seleccionado ? 'bg-blue-700/20 border-blue-400 ring-2 ring-blue-400' : 'bg-slate-800/70 border-slate-600 hover:bg-blue-900/20 hover:border-blue-500'}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!!seleccionado}
+                                onChange={() => {
+                                  handleEnvaseChange(envase._id)
+                                }}
+                                className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 border-gray-400"
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-base flex items-center gap-2">
+                                  {envase.tipo === 'vidrio' ? (
+                                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-900 text-blue-200 border border-blue-700">Vidrio</span>
+                                  ) : (
+                                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-900 text-yellow-200 border border-yellow-700">Plástico</span>
+                                  )}
+                                  {envase.volumen}ml
+                                </span>
+                                <span className="text-xs text-green-300 font-bold">${envase.precio.toLocaleString()} <span className="text-gray-400">| Stock: {envase.stock}</span></span>
+                              </div>
+                            </label>
+                          )
+                        })}
                       </div>
+                      {(!form.envases || form.envases.length === 0) && (
+                        <p className="text-red-400 text-xs mt-2">Debes seleccionar al menos un envase</p>
+                      )}
+                    </div>
+
+                    {/* Estado */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+                      <select
+                        className="admin-input"
+                        value={form.estado ? 'activo' : 'inactivo'}
+                        onChange={e => setForm(prev => ({ ...prev, estado: e.target.value === 'activo' ? true : false }))}
+                      >
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                      </select>
                     </div>
                   </div>
-                </div>
-
-                {/* Description */}
-                <div className="bg-gradient-to-r from-gray-800/30 via-gray-700/20 to-transparent rounded-xl p-6 border border-gray-700/30">
-                  <h4 className="text-base font-medium text-white mb-4">Descripción</h4>
-                  <p className="text-gray-300 whitespace-pre-line">{form.description}</p>
-                </div>
-
-                {/* Images */}
-                <div className="bg-gradient-to-r from-gray-800/30 via-gray-700/20 to-transparent rounded-xl p-6 border border-gray-700/30">
-                  <h4 className="text-base font-medium text-white mb-4">
-                    Imágenes ({form.thumbnails.filter((t) => t.trim()).length})
-                  </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {form.thumbnails
-                      .filter((thumb) => thumb.trim())
-                      .map((thumbnail, index) => (
-                        <div key={index} className="aspect-square rounded-lg overflow-hidden border border-gray-600">
-                          <img
-                            src={thumbnail || "/placeholder.svg"}
-                            alt={`Imagen ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              ;(e.target as HTMLImageElement).src = "/placeholder.svg"
-                            }}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  {form.thumbnails.filter((t) => t.trim()).length === 0 && (
-                    <p className="text-gray-400 text-center py-4">No hay imágenes disponibles</p>
-                  )}
                 </div>
               </div>
             </div>
@@ -505,10 +650,10 @@ export default function AdminProductForm() {
           {/* Warning */}
           <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl p-4 mb-8 flex items-start space-x-3">
             <div className="flex-shrink-0 mt-0.5">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              <Clock className="h-5 w-5 text-yellow-500" />
             </div>
             <div>
-              <h4 className="text-yellow-500 font-medium">Importante</h4>
+              <h4 className="font-medium" style={{ fontSize: '0.97rem', lineHeight: '1.2', color: '#fbbf24' }}>Importante</h4>
               <p className="text-yellow-200/70 text-sm">
                 Esta acción {isEditing ? "actualizará" : "creará"} el producto en el sistema.
                 {isEditing
@@ -559,7 +704,7 @@ export default function AdminProductForm() {
   // Formulario principal
   return (
     <div className="min-h-screen bg-transparent py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-6">
@@ -570,9 +715,9 @@ export default function AdminProductForm() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">{isEditing ? "Editar Producto" : "Nuevo Producto"}</h1>
-              <p className="mt-2 text-gray-400 text-base">
-                {isEditing ? "Modifica los datos del producto" : "Completa la información del nuevo producto"}
+              <h1 className="font-bold text-white" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>{isEditing ? "Editar Perfume" : "Nuevo Perfume"}</h1>
+              <p className="text-gray-400" style={{ fontSize: '0.93rem', lineHeight: '1.2' }}>
+                {isEditing ? "Modifica los datos del perfume" : "Completa la información del nuevo perfume"}
               </p>
               {categoriesError && (
                 <div className="mt-2 flex items-center space-x-2">
@@ -589,318 +734,181 @@ export default function AdminProductForm() {
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information Card */}
-          <div className="bg-gradient-to-br from-blue-900/20 via-blue-800/10 to-blue-700/5 border border-blue-600/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-                <h3 className="text-lg font-semibold text-white">Información Básica</h3>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Title - Full Width */}
-                <div className="lg:col-span-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">
-                    Título del Producto *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    id="title"
-                    required
-                    className="admin-input"
-                    value={form.title}
-                    onChange={handleInputChange}
-                    placeholder="Ingresa el nombre del producto"
-                  />
-                </div>
-
-                {/* Description - Full Width */}
-                <div className="lg:col-span-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
-                    Descripción *
-                  </label>
-                  <textarea
-                    name="description"
-                    id="description"
-                    rows={4}
-                    required
-                    className="admin-input resize-none"
-                    value={form.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe las características del producto"
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
-                    Categoría *
-                  </label>
-                  <select
-                    name="category"
-                    id="category"
-                    required
-                    className="admin-input"
-                    value={form.category}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Seleccionar categoría</option>
-                    {availableCategories.map((category) => (
-                      <option key={category.name} value={category.name} className="bg-gray-700">
-                        {category.display_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Size - SELECCIÓN MEJORADA CON CHECKBOXES */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">Tallas Disponibles *</label>
-                  <div className="bg-gradient-to-r from-blue-800/20 via-blue-700/10 to-transparent rounded-xl p-4 border border-blue-700/30">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                      {availableSizes.map((size) => (
-                        <label
-                          key={size}
-                          className={`flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                            form.size.includes(size)
-                              ? "border-blue-500 bg-blue-500/20 text-blue-300"
-                              : "border-gray-600 bg-gray-800/50 text-gray-400 hover:border-gray-500 hover:text-gray-300"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={form.size.includes(size)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setForm((prev) => ({
-                                  ...prev,
-                                  size: [...prev.size, size],
-                                }))
-                              } else {
-                                setForm((prev) => ({
-                                  ...prev,
-                                  size: prev.size.filter((s) => s !== size),
-                                }))
-                              }
-                            }}
-                          />
-                          <span className="text-sm font-medium">{size}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-gray-600">
-                      <p className="text-sm text-gray-400">
-                        <span className="font-medium">Tallas seleccionadas ({form.size.length}):</span>{" "}
-                        {form.size.length > 0 ? form.size.join(", ") : "Ninguna"}
-                      </p>
-                      {form.size.length === 0 && (
-                        <p className="text-red-400 text-xs mt-1">⚠️ Debes seleccionar al menos una talla</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stock */}
-                <div>
-                  <label htmlFor="stock" className="block text-sm font-medium text-gray-300 mb-2">
-                    Stock Disponible
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    id="stock"
-                    min="0"
-                    className="admin-input"
-                    value={form.stock}
-                    onChange={handleInputChange}
-                    placeholder="Cantidad disponible"
-                  />
-                </div>
-
-                {/* Price */}
-                <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-300 mb-2">
-                    Precio *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <span className="text-gray-400 text-lg font-medium">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="price"
-                      id="price"
-                      required
-                      min="0"
-                      step="0.01"
-                      className="admin-input pl-6 pr-4"
-                      value={form.price}
-                      onChange={handleInputChange}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-
-                {/* Discount */}
-                <div>
-                  <label htmlFor="discount" className="block text-sm font-medium text-gray-300 mb-2">
-                    Descuento (%)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      name="discount"
-                      id="discount"
-                      min="0"
-                      max="100"
-                      step="1"
-                      className="admin-input pr-8 pl-4"
-                      value={form.discount}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <span className="text-gray-400 text-lg font-medium">%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* Card padre con gradiente */}
+        <div className="bg-gradient-to-br from-blue-900/20 via-blue-800/10 to-blue-700/5 border border-blue-600/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8 px-6 py-8">
+            {/* Nombre */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Nombre *</label>
+              <input
+                type="text"
+                name="nombre"
+                className="admin-input"
+                value={form.nombre}
+                onChange={handleInputChange}
+                placeholder="Nombre del perfume"
+                required
+              />
             </div>
-          </div>
 
-          {/* Status Card */}
-          <div className="bg-gradient-to-br from-green-900/20 via-green-800/10 to-green-700/5 border border-green-600/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-2 h-8 bg-green-500 rounded-full"></div>
-                <h3 className="text-lg font-semibold text-white">Estado del Producto</h3>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="status"
-                    id="status"
-                    className="h-5 w-5 text-blue-500 focus:ring-blue-500 border-gray-600 rounded bg-gray-700"
-                    checked={form.status}
-                    onChange={handleInputChange}
-                  />
-                  <label htmlFor="status" className="ml-3 text-gray-300 text-lg">
-                    Producto activo y visible
-                  </label>
-                </div>
-                <div
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    form.status
-                      ? "bg-green-900 text-green-300 border border-green-700"
-                      : "bg-red-900 text-red-300 border border-red-700"
-                  }`}
-                >
-                  {form.status ? "Activo" : "Inactivo"}
-                </div>
-              </div>
+            {/* Descripción */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Descripción *</label>
+              <textarea
+                name="descripcion"
+                className="admin-input resize-none"
+                value={form.descripcion}
+                onChange={handleInputChange}
+                placeholder="Describe el perfume"
+                rows={4}
+                required
+              />
             </div>
-          </div>
 
-          {/* Images Card */}
-          <div className="bg-gradient-to-br from-purple-900/20 via-purple-800/10 to-purple-700/5 border border-purple-600/30 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
-                <h3 className="text-lg font-semibold text-white">Imágenes del Producto</h3>
-              </div>
-
-              <div className="space-y-6">
-                {form.thumbnails.map((thumbnail, index) => (
-                  <div
-                    key={index}
-                    className="bg-gradient-to-r from-purple-800/20 via-purple-700/10 to-transparent rounded-xl p-6 border border-purple-700/30 hover:from-purple-800/30 hover:via-purple-700/20 transition-all duration-300"
+            {/* Categoría */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Categoría *</label>
+              <div className="flex flex-wrap gap-2">
+                {availableCategories.map((category) => (
+                  <button
+                    type="button"
+                    key={category.name}
+                    className={`admin-btn px-3 py-1 rounded-full border text-xs font-medium transition-all duration-150
+                      ${form.categoria === category.name
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-gray-800 text-blue-200 border-gray-600 hover:bg-blue-900/30 hover:border-blue-500"}
+                      ${(form.categoria === '' && categoriasTouched) ? "ring-2 ring-red-500" : ""}`}
+                    style={{ minWidth: 100 }}
+                    onClick={() => {
+                      setForm((prev) => ({ ...prev, categoria: category.name }))
+                      setCategoriasTouched(true)
+                    }}
                   >
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-1">
-                        <label htmlFor={`thumbnail-${index}`} className="block text-sm font-medium text-gray-300 mb-2">
-                          <span className="flex items-center space-x-2">
-                            <Upload className="h-4 w-4" />
-                            <span>
-                              URL de Imagen {index + 1} {index === 0 && "*"}
-                            </span>
-                          </span>
-                        </label>
-                        <input
-                          type="url"
-                          id={`thumbnail-${index}`}
-                          className="admin-input"
-                          value={thumbnail}
-                          onChange={(e) => handleThumbnailChange(index, e.target.value)}
-                          placeholder="https://ejemplo.com/imagen.jpg"
-                        />
-                      </div>
-
-                      {/* Image Preview */}
-                      {thumbnail && (
-                        <div className="flex-shrink-0">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-600">
-                            <img
-                              src={thumbnail || "/placeholder.svg"}
-                              alt={`Preview ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).src = "/placeholder.svg"
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Remove Button */}
-                      {form.thumbnails.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeThumbnail(index)}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                    {category.display_name}
+                  </button>
                 ))}
+              </div>
+              {(form.categoria === '' && categoriasTouched) && (
+                <p className="text-red-400 text-xs mt-2">Debes seleccionar una categoría</p>
+              )}
+            </div>
 
-                <button
-                  type="button"
-                  onClick={addThumbnail}
-                  className="w-full py-4 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 hover:text-gray-300 hover:border-gray-500 transition-all duration-200 flex items-center justify-center space-x-2"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span className="font-medium">Agregar otra imagen</span>
-                </button>
+            {/* Envases */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">¿En qué envases se vende este perfume? *</label>
+              <div className="flex flex-col gap-2">
+                {envasesDisponibles.map((envase) => (
+                  <label key={envase._id} className="flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-150 shadow min-w-[220px] max-w-xl cursor-pointer bg-slate-800/70 border-slate-600 hover:bg-blue-900/20 hover:border-blue-500">
+                    <input
+                      type="checkbox"
+                      checked={form.envases?.includes(envase._id)}
+                      onChange={() => {
+                        handleEnvaseChange(envase._id)
+                      }}
+                      className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500 border-gray-400"
+                    />
+                    <span className="font-semibold text-base flex items-center gap-2">
+                      {envase.tipo === 'vidrio' ? (
+                        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-900 text-blue-200 border border-blue-700">Vidrio</span>
+                      ) : (
+                        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-900 text-yellow-200 border border-yellow-700">Plástico</span>
+                      )}
+                      {envase.volumen}ml
+                    </span>
+                    <span className="text-xs text-green-300 font-bold">${envase.precio.toLocaleString()} <span className="text-gray-400">| Stock: {envase.stock}</span></span>
+                  </label>
+                ))}
+              </div>
+              {(!form.envases || form.envases.length === 0) && (
+                <p className="text-red-400 text-xs mt-2">Debes seleccionar al menos un envase</p>
+              )}
+            </div>
+
+            {/* Notas Aromáticas */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Notas Aromáticas</label>
+              <div className="flex flex-wrap gap-2">
+                {NOTAS_COMUNES.map((nota) => (
+                  <button
+                    type="button"
+                    key={nota}
+                    className={`px-3 py-1 rounded-full border text-sm font-medium transition-all duration-150 ${form.notasAromaticas.includes(nota) ? "bg-blue-600 text-white border-blue-600" : "bg-gray-700 text-gray-200 border-gray-500 hover:bg-blue-900/30 hover:border-blue-500"}`}
+                    onClick={() => {
+                      setForm((prev) => ({
+                        ...prev,
+                        notasAromaticas: prev.notasAromaticas.includes(nota)
+                          ? prev.notasAromaticas.filter((n) => n !== nota)
+                          : [...prev.notasAromaticas, nota],
+                      }))
+                      setNotasTouched(true)
+                    }}
+                  >
+                    {nota}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/products")}
-              className="px-8 py-3 border-2 border-gray-600 rounded-xl text-gray-300 bg-transparent hover:bg-gray-700 hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium text-base"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-base min-w-[180px] sm:min-w-[200px]"
-            >
-              <Save className="h-5 w-5 mr-3" />
-              Revisar y {isEditing ? "Actualizar" : "Crear"}
-            </button>
-          </div>
-        </form>
+            {/* Imagen principal al final */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Imagen principal *</label>
+              <input
+                type="url"
+                className="admin-input"
+                placeholder="URL de la imagen principal (https://...)"
+                value={form.imagenes[0] || ""}
+                onChange={e => {
+                  const val = e.target.value;
+                  setForm(prev => ({ ...prev, imagenes: [val] }));
+                }}
+                required
+              />
+              {form.imagenes[0] && (
+                <div className="mt-4 flex justify-center">
+                  <img
+                    src={form.imagenes[0]}
+                    alt="Imagen principal"
+                    className="w-40 h-40 object-cover rounded-lg border border-gray-600"
+                    onError={e => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Estado */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+              <select
+                className="admin-input"
+                value={form.estado ? 'activo' : 'inactivo'}
+                onChange={e => setForm(prev => ({ ...prev, estado: e.target.value === 'activo' ? true : false }))}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </select>
+            </div>
+
+            {/* Botón para crear/actualizar perfume al final del formulario */}
+            <div className="mt-12 flex justify-center">
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center px-8 py-3 border border-transparent rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium text-base min-w-[180px] sm:min-w-[200px]"
+                disabled={saving || loading}
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    {isEditing ? "Actualizar perfume" : "Crear perfume"}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )

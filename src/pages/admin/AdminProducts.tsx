@@ -11,26 +11,36 @@ import {
   RefreshCw,
   ArrowLeft,
   Package,
-  DollarSign,
   CheckCircle,
   XCircle,
   Eye,
 } from "lucide-react"
 import { apiService } from "../../services/api"
 
+interface Envase {
+  _id?: string;
+  tipo: 'vidrio' | 'plastico';
+  volumen: number;
+  precio: number;
+  stock: number;
+}
+
 interface Product {
   _id: string
-  title: string
-  description: string
-  price: number
-  category: string
+  nombre: string
+  descripcion: string
+  precio: number
   stock: number
-  size: string[]
-  status: boolean
-  thumbnails: string[]
-  discount?: number
-  createdAt: string
-  updatedAt: string
+  categoria: string
+  volumen: { ml: string; precio: number }[]
+  notasAromaticas: string[]
+  imagenes: string[]
+  descripcionDupe?: string
+  tipo: "vidrio" | "plastico"
+  createdAt?: string
+  updatedAt?: string
+  envases?: Envase[]
+  estado: boolean
 }
 
 interface Category {
@@ -43,7 +53,6 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalProductsCount, setTotalProductsCount] = useState(0)
@@ -56,7 +65,6 @@ export default function AdminProducts() {
       console.log("AdminProducts - Iniciando carga de productos...", {
         currentPage,
         categoryFilter,
-        statusFilter,
         searchTerm,
       })
 
@@ -64,22 +72,18 @@ export default function AdminProducts() {
       const params: {
         page?: number
         limit?: number
-        category?: string
-        searchTerm?: string
-        status?: boolean
+        categoria?: string
+        nombre?: string
       } = {
         page: currentPage,
         limit: 10,
       }
 
       if (categoryFilter !== "all") {
-        params.category = categoryFilter
+        params.categoria = categoryFilter
       }
       if (searchTerm.trim()) {
-        params.searchTerm = searchTerm.trim()
-      }
-      if (statusFilter !== "all") {
-        params.status = statusFilter === "active"
+        params.nombre = searchTerm.trim()
       }
 
       console.log("AdminProducts - Parámetros de búsqueda:", params)
@@ -137,7 +141,7 @@ export default function AdminProducts() {
   useEffect(() => {
     console.log("AdminProducts - useEffect ejecutándose por cambio en dependencias")
     loadProducts()
-  }, [currentPage, categoryFilter, statusFilter])
+  }, [currentPage, categoryFilter])
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -206,7 +210,7 @@ export default function AdminProducts() {
   const deleteProduct = async (id: string) => {
     // Encontrar el producto para mostrar información en la confirmación
     const product = products.find((p) => p._id === id)
-    const productName = product ? product.title : "este producto"
+    const productName = product ? product.nombre : "este producto"
 
     if (
       window.confirm(
@@ -251,8 +255,8 @@ export default function AdminProducts() {
   const toggleProductStatus = async (product: Product) => {
     try {
       setUpdating(true)
-      await apiService.updateProduct(product._id, { status: !product.status })
-      alert(`Producto ${product.status ? "desactivado" : "activado"} exitosamente.`)
+      await apiService.updateProduct(product._id, { estado: !product.estado })
+      alert(`Producto ${product.estado ? "desactivado" : "activado"} exitosamente.`)
       loadProducts()
     } catch (error) {
       console.error("Error toggling product status:", error)
@@ -326,8 +330,8 @@ export default function AdminProducts() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Gestión de Productos</h1>
-          <p className="mt-2 text-gray-400">Administra y supervisa todos los productos de tu tienda</p>
+          <h1 className="text-3xl font-bold text-white">Gestión de Perfumes</h1>
+          <p className="mt-2 text-gray-400">Administra y supervisa todos los perfumes de tu tienda</p>
         </div>
         <Link
           to="/admin"
@@ -346,7 +350,7 @@ export default function AdminProducts() {
             className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600/30 to-blue-700/20 text-blue-300 border border-blue-600/40 rounded-lg hover:from-blue-600/40 hover:to-blue-700/30 transition-all duration-300 hover:scale-105 font-medium shadow-lg text-xs sm:text-base"
           >
             <PlusCircle className="h-5 w-5 mr-2" />
-            Añadir Nuevo Producto
+            Añadir Nuevo Perfume
           </Link>
 
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
@@ -382,22 +386,6 @@ export default function AdminProducts() {
                 </select>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="admin-input text-xs sm:text-sm"
-                >
-                  <option value="all">Todos los estados</option>
-                  <option value="active">Activos</option>
-                  <option value="inactive">Inactivos</option>
-                </select>
-              </div>
-
               <button
                 onClick={loadProducts}
                 className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-emerald-600/30 to-emerald-700/20 text-emerald-300 border border-emerald-600/40 rounded-lg hover:from-emerald-600/40 hover:to-emerald-700/30 transition-all duration-300 font-medium text-xs sm:text-base"
@@ -419,9 +407,9 @@ export default function AdminProducts() {
         ) : products.length === 0 ? (
           <div className="text-center py-16">
             <Package className="mx-auto h-16 w-16 text-gray-500 mb-4" />
-            <h3 className="text-xl font-medium text-white mb-2">No hay productos</h3>
+            <h3 className="text-xl font-medium text-white mb-2">No hay perfumes</h3>
             <p className="mt-1 text-sm text-gray-400">
-              {searchTerm || categoryFilter !== "all" || statusFilter !== "all"
+              {searchTerm || categoryFilter !== "all"
                 ? "No se encontraron productos con los filtros aplicados."
                 : "Añade tu primer producto para empezar."}
             </p>
@@ -432,16 +420,13 @@ export default function AdminProducts() {
               <thead className="bg-gradient-to-r from-gray-900/60 to-gray-800/40">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Producto
+                   Perfumes
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Categoría
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Precio
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Stock
+                    Notas Aromáticas
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Estado
@@ -453,7 +438,7 @@ export default function AdminProducts() {
               </thead>
               <tbody className="divide-y divide-gray-700/30">
                 {products.map((product) => {
-                  const categoryStyle = getCategoryGradient(product.category)
+                  const categoryStyle = getCategoryGradient(product.categoria)
                   return (
                     <tr
                       key={product._id}
@@ -463,12 +448,12 @@ export default function AdminProducts() {
                         <div className="flex items-center">
                           <img
                             className="h-12 w-12 rounded-lg object-cover border-2 border-gray-600/50 mr-4 shadow-md"
-                            src={product.thumbnails[0] || "/placeholder.svg?height=48&width=48"}
-                            alt={product.title}
+                            src={product.imagenes[0] || "/placeholder.svg?height=48&width=48"}
+                            alt={product.nombre}
                           />
                           <div className="sm:pr-10">
-                            <div className="text-sm font-medium text-white">{product.title}</div>
-                            <div className="text-xs text-gray-400 line-clamp-1 max-w-xs">{product.description}</div>
+                            <div className="text-sm font-medium text-white">{product.nombre}</div>
+                            <div className="text-xs text-gray-400 line-clamp-1 max-w-xs">{product.descripcion}</div>
                           </div>
                         </div>
                       </td>
@@ -476,25 +461,14 @@ export default function AdminProducts() {
                         <span
                           className={`px-3 py-1 text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-gray-700/40 to-gray-600/30 border border-gray-600/40 ${categoryStyle.textColor}`}
                         >
-                          {product.category}
+                          {product.categoria}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white font-medium flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1 text-emerald-400" />
-                          {product.price.toLocaleString()}
-                          {product.discount && (
-                            <span className="ml-2 text-xs bg-gradient-to-r from-green-500/30 to-green-600/20 text-green-300 px-2 py-0.5 rounded-full border border-green-500/40">
-                              -{product.discount}%
-                            </span>
-                          )}
-                        </div>
+                        {product.notasAromaticas?.slice(0, 2).join(', ') || '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white font-medium">{product.stock}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {product.status ? (
+                        {product.estado ? (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-emerald-500/30 to-emerald-600/20 text-emerald-300 border border-emerald-500/40">
                             <CheckCircle className="h-3 w-3 mr-1" /> Activo
                           </span>
@@ -538,12 +512,12 @@ export default function AdminProducts() {
                           onClick={() => toggleProductStatus(product)}
                           disabled={updating}
                           className={`inline-flex items-center px-3 py-1.5 rounded-lg transition-all duration-300 text-sm font-medium ${
-                            product.status
+                            product.estado
                               ? "bg-gradient-to-r from-red-600/30 to-red-700/20 text-red-300 border border-red-600/40 hover:from-red-600/40 hover:to-red-700/30"
                               : "bg-gradient-to-r from-emerald-600/30 to-emerald-700/20 text-emerald-300 border border-emerald-600/40 hover:from-emerald-600/40 hover:to-emerald-700/30"
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                          {product.status ? (
+                          {product.estado ? (
                             <>
                               <XCircle className="h-4 w-4 mr-1" /> Desactivar
                             </>

@@ -97,6 +97,7 @@ interface Perfume {
   tipo: "vidrio" | "plastico"
   createdAt?: string
   updatedAt?: string
+  estado: boolean
 }
 
 interface PerfumeCreateData {
@@ -109,6 +110,7 @@ interface PerfumeCreateData {
   descripcionDupe?: string
   tipo: "vidrio" | "plastico"
   notasAromaticas: string[]
+  estado: boolean
 }
 
 export const apiService = {
@@ -328,8 +330,8 @@ export const apiService = {
 
   createProduct: async (productData: PerfumeCreateData) => {
     try {
-      const response = (await apiService.post("/products", productData)) as any
-      return { success: true, product: response.product as Perfume }
+      const response = await apiService.post("/products", productData) as Perfume
+      return { success: true, product: response }
     } catch (error: unknown) {
       return {
         success: false,
@@ -342,8 +344,8 @@ export const apiService = {
 
   updateProduct: async (id: string, productData: Partial<PerfumeCreateData>) => {
     try {
-      const response = (await apiService.put(`/products/${id}`, productData)) as any
-      return { success: true, product: response.product as Perfume }
+      const response = await apiService.put(`/products/${id}`, productData) as Perfume
+      return { success: true, product: response }
     } catch (error: unknown) {
       return {
         success: false,

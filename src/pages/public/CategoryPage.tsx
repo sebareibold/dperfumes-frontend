@@ -1,11 +1,10 @@
 "use client"
 import { useParams, Link } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { ShoppingBag, Eye, Loader2, RefreshCw, Sparkles, Package } from "lucide-react"
+import { ShoppingBag, Eye, Loader2, RefreshCw, Sparkles, Package, Star, ArrowRight, Filter } from "lucide-react"
 import { useCart } from "../../contexts/CartContext"
 import { apiService } from "../../services/api"
 
-// Definición de interfaces actualizadas para perfumes
 interface Product {
   _id: string
   nombre: string
@@ -34,7 +33,6 @@ export default function CategoryPage() {
   const [error, setError] = useState<string | null>(null)
   const { addToCart } = useCart()
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -67,7 +65,6 @@ export default function CategoryPage() {
         category: categoryName,
       }
 
-      // Add sorting parameters based on currentSortBy
       if (currentSortBy === "price-low") {
         params.sortBy = "precio"
         params.sortOrder = "asc"
@@ -75,14 +72,11 @@ export default function CategoryPage() {
         params.sortBy = "precio"
         params.sortOrder = "desc"
       } else {
-        // Default to name
         params.sortBy = "nombre"
         params.sortOrder = "asc"
       }
 
       const response = await apiService.getProducts(params)
-
-      // Los productos ya vienen en el formato correcto del backend
       const transformedProducts = (response.payload || []).map((product: Product) => product)
 
       setProducts((prevProducts) =>
@@ -90,8 +84,6 @@ export default function CategoryPage() {
       )
       setTotalPages(response.totalPages)
       setCurrentPage(pageToLoad)
-      console.log("Resultado de apiService.getProducts:", response);
-      console.log("Productos en si obtenidos al luego de setear", products);
       setError(null)
     } catch (err) {
       console.error("Error loading products by category:", err)
@@ -111,22 +103,24 @@ export default function CategoryPage() {
   }
 
   const handleQuickAdd = (product: Product) => {
-    // Usar el primer volumen disponible
-    const selectedVolume = product.volumen && product.volumen.length > 0 ? product.volumen[0] : null;
-    
+    const selectedVolume = product.volumen && product.volumen.length > 0 ? product.volumen[0] : null
+
     if (!selectedVolume) {
-      alert("Este perfume no tiene volúmenes disponibles");
-      return;
+      alert("Este perfume no tiene volúmenes disponibles")
+      return
     }
 
-    addToCart({
-      id: product._id,
-      name: product.nombre,
-      price: selectedVolume.precio,
-      image: product.imagenes[0] || "/placeholder.svg",
-      size: selectedVolume.ml,
-      color: "Único",
-    }, 1)
+    addToCart(
+      {
+        id: product._id,
+        name: product.nombre,
+        price: selectedVolume.precio,
+        image: product.imagenes[0] || "/placeholder.svg",
+        size: selectedVolume.ml,
+        color: "Único",
+      },
+      1,
+    )
   }
 
   const handleLoadMore = () => {
@@ -146,144 +140,122 @@ export default function CategoryPage() {
 
   if (loading && products.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-clay mx-auto"></div>
-        <p className="mt-4" style={{ color: "var(--clay)" }}>
-          Cargando perfumes...
-        </p>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6] flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative mb-8">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#bfa77a]/20 border-t-[#bfa77a] mx-auto"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-[#bfa77a]/10 mx-auto"></div>
+          </div>
+          <p className="text-[#2d2a26] text-lg font-serif">Cargando perfumes...</p>
+        </div>
       </div>
     )
   }
 
   if (retrying) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-clay mx-auto"></div>
-        <p className="mt-4" style={{ color: "var(--clay)" }}>
-          Reintentando cargar perfumes...
-        </p>
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#bfa77a]/20 border-t-[#bfa77a] mx-auto mb-8"></div>
+          <p className="text-[#2d2a26] text-lg font-serif">Reintentando cargar perfumes...</p>
+        </div>
       </div>
     )
   }
 
   if (error && products.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="mb-4">
-          <RefreshCw className="h-12 w-12 mx-auto" style={{ color: "var(--oak)" }} />
+      <div className="min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6] flex items-center justify-center">
+        <div className="text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl border border-[#e5dfd6] shadow-xl max-w-md mx-auto">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <RefreshCw className="h-8 w-8 text-red-500" />
+          </div>
+          <h3 className="font-serif text-xl font-medium text-[#2d2a26] mb-4">Error al cargar productos</h3>
+          <p className="text-[#2d2a26]/70 mb-6 text-sm">{error}</p>
+          <button
+            onClick={handleRetry}
+            disabled={retrying}
+            className="px-6 py-3 bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white font-serif rounded-2xl hover:scale-105 transition-transform duration-300 disabled:opacity-50"
+          >
+            {retrying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                Reintentando...
+              </>
+            ) : (
+              "Reintentar"
+            )}
+          </button>
         </div>
-        <h3 className="text-lg font-medium mb-2" style={{ color: "var(--deep-clay)" }}>
-          Error al cargar productos
-        </h3>
-        <p className="text-sm mb-4" style={{ color: "var(--dark-clay)" }}>
-          {error}
-        </p>
-        <button
-          onClick={handleRetry}
-          disabled={retrying}
-          className="px-4 py-2 rounded-lg text-white font-medium transition-all duration-300 hover:scale-105 disabled:opacity-50"
-          style={{
-            background: "linear-gradient(to right, var(--clay), var(--dark-clay))",
-          }}
-        >
-          {retrying ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-              Reintentando...
-            </>
-          ) : (
-            "Reintentar"
-          )}
-        </button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--soft-creme)" }}>
+    <div className="min-h-screen bg-gradient-to-br from-[#f7f3ee] via-[#ede6db] to-[#e5dfd6] relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-20 left-10 opacity-10">
+        <div className="w-32 h-32 rounded-full bg-[#bfa77a] blur-3xl"></div>
+      </div>
+      <div className="absolute bottom-20 right-10 opacity-10">
+        <div className="w-40 h-40 rounded-full bg-[#2d2a26] blur-2xl"></div>
+      </div>
+
       {/* Breadcrumb */}
-      <div
-        style={{
-          backgroundColor: "var(--pure-white)",
-          borderBottom: `1px solid var(--bone)`,
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-2 text-sm" style={{ color: "var(--oak)" }}>
-            <Link
-              to="/"
-              className="hover:opacity-75 transition-colors"
-              style={{ color: "var(--clay)" }}
-            >
+      <div className="bg-white/80 backdrop-blur-sm border-b border-[#e5dfd6]/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+          <div className="flex items-center space-x-2 text-sm">
+            <Link to="/" className="text-[#bfa77a] hover:text-[#2d2a26] transition-colors font-medium">
               Inicio
             </Link>
-            <span>/</span>
-            <span className="font-medium capitalize" style={{ color: "var(--deep-clay)" }}>
-              {category}
-            </span>
+            <span className="text-[#2d2a26]/50">/</span>
+            <span className="font-medium capitalize text-[#2d2a26]">{category}</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
         {/* Header */}
-        <div className="text-center mb-8 lg:mb-12">
-          <h1
-            className="font-serif text-3xl lg:text-4xl font-light mb-4 lg:mb-6 capitalize"
-            style={{ color: "var(--deep-clay)" }}
-          >
-            Perfumes {category}
+        <div className="text-center mb-12 lg:mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-[#e5dfd6] shadow-lg mb-6">
+            <Package className="h-4 w-4 text-[#bfa77a] mr-2" />
+            <span className="text-sm font-medium text-[#2d2a26] tracking-wide capitalize">Categoría {category}</span>
+          </div>
+
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-[#2d2a26] mb-6 leading-tight">
+            Perfumes
+            <span className="text-[#bfa77a] italic capitalize"> {category}</span>
           </h1>
-          <p
-            className="text-lg lg:text-xl font-light max-w-3xl mx-auto"
-            style={{ color: "var(--dark-clay)" }}
-          >
-            Descubre nuestra colección de perfumes {category?.toLowerCase()}
+
+          <p className="text-lg md:text-xl text-[#2d2a26]/70 font-light leading-relaxed max-w-3xl mx-auto">
+            Descubre nuestra colección de perfumes {category?.toLowerCase()}, cuidadosamente seleccionados para
+            ofrecerte una experiencia olfativa única.
           </p>
         </div>
 
         {/* Sort Options */}
-        <div className="flex justify-center mb-8 lg:mb-12">
-          <div className="flex space-x-2 lg:space-x-4">
-            <button
-              onClick={() => setSortBy("name")}
-              className={`px-4 lg:px-6 py-2 lg:py-3 rounded-lg text-sm lg:text-base font-medium transition-all duration-300 ${
-                sortBy === "name" ? "shadow-warm" : "hover:shadow-warm"
-              }`}
-              style={{
-                backgroundColor: sortBy === "name" ? "var(--clay)" : "var(--pure-white)",
-                color: sortBy === "name" ? "var(--pure-white)" : "var(--dark-clay)",
-                border: `2px solid ${sortBy === "name" ? "var(--clay)" : "var(--bone)"}`,
-              }}
-            >
-              Nombre
-            </button>
-            <button
-              onClick={() => setSortBy("price-low")}
-              className={`px-4 lg:px-6 py-2 lg:py-3 rounded-lg text-sm lg:text-base font-medium transition-all duration-300 ${
-                sortBy === "price-low" ? "shadow-warm" : "hover:shadow-warm"
-              }`}
-              style={{
-                backgroundColor: sortBy === "price-low" ? "var(--clay)" : "var(--pure-white)",
-                color: sortBy === "price-low" ? "var(--pure-white)" : "var(--dark-clay)",
-                border: `2px solid ${sortBy === "price-low" ? "var(--clay)" : "var(--bone)"}`,
-              }}
-            >
-              Precio: Menor
-            </button>
-            <button
-              onClick={() => setSortBy("price-high")}
-              className={`px-4 lg:px-6 py-2 lg:py-3 rounded-lg text-sm lg:text-base font-medium transition-all duration-300 ${
-                sortBy === "price-high" ? "shadow-warm" : "hover:shadow-warm"
-              }`}
-              style={{
-                backgroundColor: sortBy === "price-high" ? "var(--clay)" : "var(--pure-white)",
-                color: sortBy === "price-high" ? "var(--pure-white)" : "var(--dark-clay)",
-                border: `2px solid ${sortBy === "price-high" ? "var(--clay)" : "var(--bone)"}`,
-              }}
-            >
-              Precio: Mayor
-            </button>
+        <div className="flex justify-center mb-12 lg:mb-16">
+          <div className="inline-flex items-center bg-white/80 backdrop-blur-sm rounded-2xl border border-[#e5dfd6] shadow-lg p-2">
+            <Filter className="h-4 w-4 text-[#bfa77a] mr-3 ml-2" />
+            <div className="flex space-x-1">
+              {[
+                { key: "name", label: "Nombre" },
+                { key: "price-low", label: "Precio ↑" },
+                { key: "price-high", label: "Precio ↓" },
+              ].map((option) => (
+                <button
+                  key={option.key}
+                  onClick={() => setSortBy(option.key)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    sortBy === option.key
+                      ? "bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white shadow-lg"
+                      : "text-[#2d2a26] hover:bg-[#f7f3ee]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -291,108 +263,108 @@ export default function CategoryPage() {
         {isCategoryChanging && products.length === 0 ? (
           <div className="min-h-[400px] flex items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-clay mx-auto"></div>
-              <p className="mt-4" style={{ color: "var(--clay)" }}>
-                Cambiando orden...
-              </p>
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#bfa77a]/20 border-t-[#bfa77a] mx-auto mb-4"></div>
+              <p className="text-[#2d2a26] font-serif">Cambiando orden...</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
-              {products.map((product) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12 lg:mb-16">
+              {products.map((product, index) => (
                 <div
                   key={product._id}
-                  className="group relative overflow-hidden transition-all duration-500 ease-in-out
-          shadow-lg hover:shadow-xl rounded-lg cursor-pointer flex flex-col hover:scale-[1.03]
-          border-[3px] border-transparent hover:border-clay"
-                  onClick={() => window.location.href = `/product/${product._id}`}
+                  className="group relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-[#e5dfd6]/50 hover:border-[#bfa77a]/30 hover:scale-105 cursor-pointer"
+                  onClick={() => (window.location.href = `/product/${product._id}`)}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Image Container */}
-                  <div
-                    className="aspect-[3/4] rounded-t-lg overflow-hidden relative"
-                    style={{ backgroundColor: "var(--bone)" }}
-                  >
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-t-3xl bg-gradient-to-br from-[#f7f3ee] to-[#ede6db]">
                     <img
                       src={product.imagenes?.[0] || "/placeholder.svg"}
                       alt={product.nombre}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-500"
                     />
-                    {/* Image Overlay on Hover */}
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
-                    {/* Quick Add Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleQuickAdd(product);
-                      }}
-                      className="absolute top-2 right-2 p-2 rounded-full bg-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
-                    >
-                      <ShoppingBag className="h-4 w-4" style={{ color: "var(--clay)" }} />
-                    </button>
 
-                    {/* View Details Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = `/product/${product._id}`;
-                      }}
-                      className="absolute bottom-2 left-2 p-2 rounded-full bg-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
-                    >
-                      <Eye className="h-4 w-4" style={{ color: "var(--clay)" }} />
-                    </button>
+                    {/* Overlay with actions */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleQuickAdd(product)
+                          }}
+                          className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-[#bfa77a] hover:text-white transition-all duration-300 hover:scale-110"
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.location.href = `/product/${product._id}`
+                          }}
+                          className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-[#2d2a26] hover:text-white transition-all duration-300 hover:scale-110"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Type badge */}
+                    <div className="absolute top-4 left-4">
+                      <div
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          product.tipo === "vidrio" ? "bg-[#bfa77a] text-white" : "bg-[#2d2a26] text-white"
+                        }`}
+                      >
+                        {product.tipo === "vidrio" ? "Vidrio" : "Plástico"}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Content */}
-                  <div className="p-3 lg:p-4 flex flex-col flex-grow">
-                    <h3
-                      className="font-serif font-medium mb-2 text-sm lg:text-base line-clamp-2"
-                      style={{ color: "var(--deep-clay)" }}
-                    >
-                      {product.nombre}
-                    </h3>
-                    
-                    {/* Notas Aromáticas */}
-                    {product.notasAromaticas && product.notasAromaticas.length > 0 && (
-                      <div className="mb-2">
-                        <div className="flex items-center mb-1">
-                          <Sparkles className="h-3 w-3 mr-1" style={{ color: "var(--clay)" }} />
-                          <span className="text-xs" style={{ color: "var(--oak)" }}>
+                  <div className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <h3 className="font-serif text-lg font-medium text-[#2d2a26] line-clamp-2 group-hover:text-[#bfa77a] transition-colors duration-300">
+                        {product.nombre}
+                      </h3>
+
+                      {/* Aromatic notes */}
+                      {product.notasAromaticas && product.notasAromaticas.length > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <Sparkles className="h-3 w-3 text-[#bfa77a]" />
+                          <span className="text-xs text-[#2d2a26]/60 truncate">
                             {product.notasAromaticas.slice(0, 2).join(", ")}
                             {product.notasAromaticas.length > 2 && "..."}
                           </span>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* Tipo de Envase */}
-                    <div className="mb-2">
-                      <div className="flex items-center">
-                        <Package className="h-3 w-3 mr-1" style={{ color: "var(--clay)" }} />
-                        <span className="text-xs capitalize" style={{ color: "var(--oak)" }}>
-                          {product.tipo === "vidrio" ? "Vidrio" : "Plástico"}
-                        </span>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="text-xl font-bold text-[#2d2a26]">
+                          ${Math.round(product.precio).toLocaleString()}
+                        </div>
+                        {product.volumen && product.volumen.length > 0 && (
+                          <div className="text-xs text-[#bfa77a] font-medium">desde {product.volumen[0].ml}</div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="text-sm font-medium text-[#2d2a26]">4.8</span>
                       </div>
                     </div>
 
-                    {/* Precio */}
-                    <p className="font-semibold text-lg lg:text-xl mb-3" style={{ color: "var(--dark-clay)" }}>
-                      ${Math.round(product.precio).toLocaleString()}
-                    </p>
-
-                    {/* "Ver más" button */}
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();
-                        window.location.href = `/product/${product._id}`;
+                        e.stopPropagation()
+                        window.location.href = `/product/${product._id}`
                       }}
-                      className="w-full py-2.5 lg:py-3 rounded-xl text-white font-semibold text-xs lg:text-sm uppercase tracking-[0.1em] transition-all duration-300 hover:brightness-110 shadow-md hover:shadow-lg mt-auto"
-                      style={{
-                        background: "linear-gradient(to right, var(--clay), var(--dark-clay))",
-                      }}
+                      className="w-full py-3 bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white font-serif rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
                     >
-                      Ver más
+                      <span>Ver Detalles</span>
+                      <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -405,18 +377,18 @@ export default function CategoryPage() {
                 <button
                   onClick={handleLoadMore}
                   disabled={loadingMore}
-                  className="px-8 py-3 lg:px-10 lg:py-4 rounded-xl text-white font-medium text-sm lg:text-base uppercase tracking-[0.1em] transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-warm-lg"
-                  style={{
-                    background: "linear-gradient(to right, var(--clay), var(--dark-clay))",
-                  }}
+                  className="group inline-flex items-center px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-[#2d2a26] text-[#2d2a26] font-serif text-lg rounded-2xl hover:bg-[#2d2a26] hover:text-white transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loadingMore ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
                       Cargando...
                     </>
                   ) : (
-                    "Cargar más perfumes"
+                    <>
+                      <span>Cargar más perfumes</span>
+                      <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    </>
                   )}
                 </button>
               </div>
@@ -424,16 +396,19 @@ export default function CategoryPage() {
 
             {/* No Products Message */}
             {products.length === 0 && !loading && !error && (
-              <div className="text-center py-16">
-                <div className="mb-4">
-                  <Package className="h-16 w-16 mx-auto" style={{ color: "var(--oak)" }} />
+              <div className="text-center py-20">
+                <div className="w-24 h-24 bg-[#f7f3ee] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Package className="h-12 w-12 text-[#bfa77a]" />
                 </div>
-                <h3 className="text-lg font-medium mb-2" style={{ color: "var(--deep-clay)" }}>
-                  No se encontraron perfumes
-                </h3>
-                <p className="text-sm" style={{ color: "var(--dark-clay)" }}>
-                  No hay perfumes disponibles en esta categoría.
-                </p>
+                <h3 className="font-serif text-2xl font-medium text-[#2d2a26] mb-4">No se encontraron perfumes</h3>
+                <p className="text-[#2d2a26]/70 mb-8">No hay perfumes disponibles en esta categoría en este momento.</p>
+                <Link
+                  to="/"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white font-serif rounded-2xl hover:scale-105 transition-transform duration-300"
+                >
+                  <span>Explorar otras categorías</span>
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
               </div>
             )}
           </>

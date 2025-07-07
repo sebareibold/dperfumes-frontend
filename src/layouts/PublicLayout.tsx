@@ -4,12 +4,14 @@ import Footer from "../components/home/Footer"
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <Header />
-      <main>
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+      <div className="min-h-screen relative overflow-x-hidden">
+        <main>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
   )
 }

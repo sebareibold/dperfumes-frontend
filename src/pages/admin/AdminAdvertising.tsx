@@ -73,7 +73,7 @@ const AdminAdvertising: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking")
   // Estados de textos personalizables
   const [customTexts, setCustomTexts] = useState({
-    brandName: "Joly Lingerie",
+    brandName: "Daisy Perfumes",
     introSubtitle: "Nuestra Colección",
     introDescription: "productos exclusivos y elegantes",
     outroMessage: "Gracias por tu preferencia",
@@ -1038,7 +1038,7 @@ const AdminAdvertising: React.FC = () => {
                         })
                       }
                       className="w-full p-2 lg:p-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-green-500 focus:outline-none text-sm lg:text-base"
-                      placeholder="Joly Lingerie"
+                      placeholder="Daisy Perfumes"
                     />
                   </div>
                   <div>

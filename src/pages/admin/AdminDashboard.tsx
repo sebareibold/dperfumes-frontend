@@ -392,7 +392,7 @@ export default function AdminDashboard() {
               <Activity className="h-6 w-6 text-green-400" />
             </div>
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-green-300">
+              <h2 className="font-bold text-slate-100 mb-1" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>
                 Productos Más Vistos
               </h2>
               <p className="text-sm text-green-400/80">
@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                 <Tag className="h-6 w-6 text-purple-400" />
               </div>
               <div>
-                <h2 className="text-base sm:text-xl font-bold text-purple-300">
+                <h2 className="font-bold text-slate-100 mb-1" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>
                   Categorías Más Visitadas
                 </h2>
                 <p className="text-sm text-purple-400/80">
@@ -582,7 +582,7 @@ export default function AdminDashboard() {
                 <Clock className="h-6 w-6 text-blue-400" />
               </div>
               <div>
-                <h2 className="text-base sm:text-xl font-bold text-blue-300">
+                <h2 className="font-bold text-slate-100 mb-1" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>
                   Órdenes Recientes
                 </h2>
                 <p className="text-sm text-blue-400/80">Actividad reciente</p>
@@ -685,7 +685,9 @@ export default function AdminDashboard() {
             <Settings className="h-6 w-6 text-gray-400" />
           </div>
           <div>
-            <h2 className="text-base sm:text-xl font-bold text-white">Accesos Rápidos</h2>
+            <h2 className="font-bold text-slate-100 mb-1" style={{ fontSize: '1.05rem', lineHeight: '1.2' }}>
+              Accesos Rápidos
+            </h2>
             <p className="text-sm text-gray-400">Herramientas principales</p>
           </div>
         </div>

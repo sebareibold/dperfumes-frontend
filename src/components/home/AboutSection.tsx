@@ -9,7 +9,7 @@ interface AboutSectionProps {
 
 export default function AboutSection({ imageUrl, imageAlt, title, description }: AboutSectionProps) {
   return (
-    <section className="py-20 bg-[#f7f3ee]" id="about">
+    <section className="py-20 bg-transparent" id="about">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 px-6">
         {/* Imagen */}
         <div className="flex-1 flex justify-center mb-8 md:mb-0">

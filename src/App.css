@@ -1,32 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Inter:wght@100;200;300;400;500;600;700&display=swap");
 
 :root {
-  /* New Elegant Neutral Palette - Based on provided image */
-  --creme: #f7f5f3;
-  --bone: #e8e0d6;
-  --oak: #c4b5a0;
-  --clay: #8b7355;
-
-  /* Extended palette for design consistency */
-  --pure-white: #ffffff;
-  --soft-creme: #faf9f7;
-  --warm-bone: #ede5db;
-  --medium-oak: #b8a688;
-  --dark-clay: #6d5940;
-  --deep-clay: #5a4a35;
-
-  /* Accent colors */
-  --accent-gold: #d4af37;
-  --soft-gold: #e8c547;
-
-  /* Shadows using the new palette */
-  --light-shadow: rgba(139, 115, 85, 0.08);
-  --medium-shadow: rgba(139, 115, 85, 0.12);
-  --dark-shadow: rgba(93, 73, 53, 0.16);
+  /* Paleta elegante actualizada */
+  --primary-dark: #2C3E50; /* Azul medianoche profundo */
+  --primary-dark-alt: #1A2B3C; /* Alternativa aún más oscura */
+  --accent-gold: #C2B280; /* Dorado suave */
+  --accent-bronze: #AF8D6A; /* Bronce cálido */
+  --accent-coral: #E07A5F; /* Coral muted */
+  --neutral-white: #FFFFFF;
+  --neutral-black: #1C1C1C;
+  --neutral-black-alt: #222222;
+  --background-main: #F2F4F7; /* Gris muy claro */
+  --background-beige: #F5F5DC; /* Beige pálido */
+  --text-main: #222222;
+  --text-aux: #666666;
+  --text-aux-light: #888888;
+  --card-bg: #FFFFFF;
+  --card-border: #E0E0E0;
+  --shadow-elegant: 0 10px 25px -5px rgba(44,62,80,0.08), 0 10px 10px -5px rgba(44,62,80,0.08);
+  --shadow-elegant-lg: 0 20px 25px -5px rgba(44,62,80,0.12), 0 10px 10px -5px rgba(44,62,80,0.08);
+  --radius-main: 10px;
+  --radius-card: 12px;
+  --radius-btn: 8px;
 }
 
 * {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Lato', 'Roboto', 'Open Sans', 'Montserrat', system-ui, -apple-system, sans-serif;
 }
 
 .font-serif {
@@ -36,12 +35,12 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
-  background-color: var(--soft-creme);
+  background-color: var(--background-main);
 }
 
-body {
-  background-color: var(--soft-creme);
-  color: var(--dark-clay);
+body, html {
+  background-color: var(--background-main);
+  color: var(--text-main);
 }
 
 /* Custom scrollbar */
@@ -253,56 +252,53 @@ body {
 
 /* Elegant buttons */
 .btn-primary {
-  background: linear-gradient(135deg, var(--clay), var(--dark-clay));
-  color: var(--pure-white);
+  background: var(--primary-dark);
+  color: var(--neutral-white);
+  border-radius: var(--radius-btn);
   border: none;
   padding: 14px 36px;
-  border-radius: 12px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.8px;
-  transition: all 0.4s ease;
-  box-shadow: 0 6px 20px var(--light-shadow);
+  transition: all 0.3s;
+  box-shadow: var(--shadow-elegant);
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px var(--medium-shadow);
-  background: linear-gradient(135deg, var(--dark-clay), var(--deep-clay));
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--accent-gold);
+  color: var(--primary-dark);
+  box-shadow: var(--shadow-elegant-lg);
 }
 
 .btn-secondary {
-  background: var(--pure-white);
-  color: var(--clay);
-  border: 2px solid var(--oak);
-  padding: 14px 36px;
-  border-radius: 12px;
+  background: var(--neutral-white);
+  color: var(--primary-dark);
+  border: 2px solid var(--accent-gold);
+  border-radius: var(--radius-btn);
   font-weight: 500;
   letter-spacing: 0.8px;
-  transition: all 0.4s ease;
-  text-transform: uppercase;
-  font-size: 0.9rem;
+  transition: all 0.3s;
+  font-size: 1rem;
 }
 
-.btn-secondary:hover {
-  background: var(--bone);
-  border-color: var(--clay);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--light-shadow);
+.btn-secondary:hover, .btn-secondary:focus {
+  background: var(--background-beige);
+  color: var(--primary-dark);
+  border-color: var(--accent-bronze);
 }
 
 /* Elegant cards */
 .card-elegant {
-  background: var(--pure-white);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px var(--light-shadow);
-  border: 1px solid var(--bone);
-  transition: all 0.3s ease;
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-elegant);
+  border: 1px solid var(--card-border);
+  transition: box-shadow 0.3s, transform 0.3s;
 }
 
 .card-elegant:hover {
-  box-shadow: 0 8px 30px var(--medium-shadow);
+  box-shadow: var(--shadow-elegant-lg);
   transform: translateY(-4px);
 }
 
@@ -625,18 +621,25 @@ a:focus-visible {
 
 /* Elegant form inputs */
 .input-elegant {
-  background: var(--pure-white);
-  border: 2px solid var(--bone);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--dark-clay);
-  transition: all 0.3s ease;
+  border: none;
+  border-bottom: 2px solid var(--accent-gold);
+  background: var(--neutral-white);
+  border-radius: 0;
+  color: var(--text-main);
+  font-size: 1rem;
+  padding: 10px 0;
+  transition: border-color 0.3s;
 }
 
 .input-elegant:focus {
   outline: none;
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+  border-bottom: 2.5px solid var(--primary-dark);
+  background: var(--background-beige);
+}
+
+::placeholder {
+  color: var(--text-aux-light);
+  opacity: 1;
 }
 
 /* Loading states */
@@ -644,4 +647,20 @@ a:focus-visible {
   background: linear-gradient(90deg, var(--creme) 25%, var(--bone) 50%, var(--creme) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+
+
+/* Texto auxiliar */
+.text-aux {
+  color: var(--text-aux);
+}
+
+/* Iconos outline elegantes */
+.icon-elegant {
+  color: var(--primary-dark);
+  stroke-width: 1.5;
+}
+.icon-elegant-accent {
+  color: var(--accent-gold);
 }
