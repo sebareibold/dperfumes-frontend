@@ -74,7 +74,7 @@ export default function ContactSection({ content }: ContactSectionProps) {
 
   if (!content) {
     return (
-      <section className="py-20 lg:py-32 bg-[var(--background-main)]">
+      <section className="py-20 lg:py-32 bg-transparent">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
             <p className="text-lg text-[var(--accent-gold)]">Contenido de contacto no disponible</p>
@@ -123,7 +123,7 @@ export default function ContactSection({ content }: ContactSectionProps) {
   }
 
   return (
-    <section className="py-20 lg:py-32 bg-[var(--background-main)] flex justify-center items-center">
+    <section className="py-20 lg:py-32 bg-transparent flex justify-center items-center">
       <div className="max-w-5xl w-full mx-auto bg-white rounded-2xl shadow-elegant overflow-hidden flex flex-col md:flex-row items-center justify-center min-h-[420px]">
         {/* Tarjeta de información de contacto tipo squircle */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 h-full">

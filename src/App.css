@@ -4,14 +4,17 @@
   /* Paleta elegante actualizada */
   --primary-dark: #2C3E50; /* Azul medianoche profundo */
   --primary-dark-alt: #1A2B3C; /* Alternativa aún más oscura */
-  --accent-gold: #C2B280; /* Dorado suave */
-  --accent-bronze: #AF8D6A; /* Bronce cálido */
-  --accent-coral: #E07A5F; /* Coral muted */
+  --primary-blue: #1976D2; /* Azul principal */
+  --secondary-blue: #0D47A1; /* Azul oscuro */
+  --accent-gold: #3570c9; /* Dorado suave */
+  --accent-bronze: #FFFFFF; /* Bronce cálido */
+  --accent-coral: #517fc5; /* Coral muted */
   --neutral-white: #FFFFFF;
   --neutral-black: #1C1C1C;
-  --neutral-black-alt: #222222;
   --background-main: #F2F4F7; /* Gris muy claro */
-  --background-beige: #F5F5DC; /* Beige pálido */
+  --background-beige: #1976D2; /* Reemplazado beige por azul principal */
+  --primary-beige: #1976D2; /* Reemplazado beige por azul principal */
+  --secondary-beige: #0D47A1; /* Reemplazado beige por azul oscuro */
   --text-main: #222222;
   --text-aux: #666666;
   --text-aux-light: #888888;
@@ -22,6 +25,22 @@
   --radius-main: 10px;
   --radius-card: 12px;
   --radius-btn: 8px;
+  
+  /* Nuevos gradientes para perfumes */
+  --gradient-primary: linear-gradient(135deg, #1976D2 0%, #0D47A1 50%, #2C3E50 100%);
+  --gradient-secondary: linear-gradient(135deg, #3570c9 0%, #1976D2 50%, #0D47A1 100%);
+  --gradient-accent: linear-gradient(135deg, #517fc5 0%, #3570c9 50%, #1976D2 100%);
+  --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 50%, #F2F4F7 100%);
+  --gradient-hero: linear-gradient(135deg, #F2F4F7 0%, #E8ECF1 50%, #D1D9E6 100%);
+  --gradient-overlay: linear-gradient(135deg, rgba(44,62,80,0.1) 0%, rgba(25,118,210,0.05) 50%, rgba(13,71,161,0.1) 100%);
+  --gradient-text: linear-gradient(135deg, #2C3E50 0%, #1976D2 50%, #0D47A1 100%);
+  --gradient-button: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+  --gradient-button-hover: linear-gradient(135deg, #0D47A1 0%, #2C3E50 100%);
+  --gradient-navbar: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+  --gradient-footer: linear-gradient(135deg, #2C3E50 0%, #1A2B3C 100%);
+  --gradient-section: linear-gradient(135deg, #F8FAFC 0%, #F2F4F7 50%, #E8ECF1 100%);
+  --gradient-product-card: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 50%, #F2F4F7 100%);
+  --gradient-product-hover: linear-gradient(135deg, #F8FAFC 0%, #E8ECF1 50%, #D1D9E6 100%);
 }
 
 * {
@@ -252,7 +271,7 @@ body, html {
 
 /* Elegant buttons */
 .btn-primary {
-  background: var(--primary-dark);
+  background: var(--gradient-button);
   color: var(--neutral-white);
   border-radius: var(--radius-btn);
   border: none;
@@ -263,43 +282,71 @@ body, html {
   box-shadow: var(--shadow-elegant);
   text-transform: uppercase;
   font-size: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary:hover, .btn-primary:focus {
-  background: var(--accent-gold);
-  color: var(--primary-dark);
+  background: var(--gradient-button-hover);
+  color: var(--neutral-white);
   box-shadow: var(--shadow-elegant-lg);
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: var(--neutral-white);
+  background: var(--gradient-card);
   color: var(--primary-dark);
-  border: 2px solid var(--accent-gold);
+  border: 2px solid var(--primary-blue);
   border-radius: var(--radius-btn);
   font-weight: 500;
   letter-spacing: 0.8px;
   transition: all 0.3s;
   font-size: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-secondary:hover, .btn-secondary:focus {
-  background: var(--background-beige);
-  color: var(--primary-dark);
-  border-color: var(--accent-bronze);
+  background: var(--gradient-secondary);
+  color: var(--neutral-white);
+  border-color: var(--secondary-blue);
+  transform: translateY(-2px);
 }
 
 /* Elegant cards */
 .card-elegant {
-  background: var(--card-bg);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-elegant);
-  border: 1px solid var(--card-border);
-  transition: box-shadow 0.3s, transform 0.3s;
+  
+  background: var(--gradient-secondary);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(44,62,80,0.08);
+  border: 1px solid var(--card-border, #e0e0e0);
+  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), 
+              transform 0.3s cubic-bezier(0.4,0,0.2,1), 
+              background 0.3s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-elegant::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .card-elegant:hover {
-  box-shadow: var(--shadow-elegant-lg);
-  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(44,62,80,0.16);
+  transform: translateY(-4px) scale(1.01);
+  background: var(--gradient-product-hover, #f8fafc);
+}
+
+.card-elegant:hover::before {
+  opacity: 1;
 }
 
 /* Responsive utilities */
@@ -663,4 +710,192 @@ a:focus-visible {
 }
 .icon-elegant-accent {
   color: var(--accent-gold);
+}
+
+/* Nuevas clases de gradientes */
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-secondary {
+  background: var(--gradient-secondary);
+}
+
+.gradient-accent {
+  background: var(--gradient-accent);
+}
+
+.gradient-card {
+  background: var(--gradient-card);
+}
+
+.gradient-hero {
+  background: var(--gradient-hero);
+}
+
+.gradient-section {
+  background: var(--gradient-section);
+}
+
+.gradient-navbar {
+  background: var(--gradient-navbar);
+  backdrop-filter: blur(10px);
+}
+
+.gradient-footer {
+  background: var(--gradient-footer);
+}
+
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              var(--gradient-primary) border-box;
+}
+
+.gradient-border-hover:hover {
+  background: linear-gradient(white, white) padding-box,
+              var(--gradient-secondary) border-box;
+}
+
+/* Gradientes para secciones específicas */
+.hero-gradient {
+  background: var(--gradient-hero);
+  position: relative;
+}
+
+.hero-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-overlay);
+  pointer-events: none;
+}
+
+.section-gradient {
+  background: var(--gradient-section);
+}
+
+.product-card-gradient {
+  background: var(--gradient-product-card);
+  transition: background 0.3s ease;
+}
+
+.product-card-gradient:hover {
+  background: var(--gradient-product-hover);
+}
+
+/* Efectos de gradiente para elementos interactivos */
+.gradient-hover {
+  transition: all 0.3s ease;
+}
+
+.gradient-hover:hover {
+  background: var(--gradient-secondary);
+  transform: translateY(-2px);
+}
+
+/* Gradientes para badges y elementos decorativos */
+.badge-gradient {
+  background: var(--gradient-accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+/* Gradientes para overlays y modales */
+.overlay-gradient {
+  background: var(--gradient-overlay);
+}
+
+.modal-gradient {
+  background: var(--gradient-card);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-elegant-lg);
+}
+
+/* Botón futurista elegante */
+.btn-futuristic {
+  background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+  background-size: 200% 200%;
+  background-position: left center;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 24px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-elegant);
+  transition: 
+    box-shadow 0.3s cubic-bezier(0.4,0,0.2,1),
+    transform 0.3s cubic-bezier(0.4,0,0.2,1),
+    background-position 0.8s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.btn-futuristic:hover {
+  background-position: right center;
+}
+
+.btn-futuristic::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: -60%;
+  width: 180%; height: 200%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.28) 45%, rgba(255,255,255,0.08) 100%);
+  filter: blur(12px);
+  transform: translateY(-50%) skewX(-20deg);
+  transition: left 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+}
+
+.btn-futuristic:hover::after {
+  left: 80%;
+  opacity: 1;
+}
+
+.btn-futuristic span {
+  position: relative;
+  z-index: 2;
+  color: white;
+}
+
+.btn-futuristic .icon-elegant {
+  transition: transform 0.3s ease;
+  color: white;
+}
+
+.btn-futuristic:hover .icon-elegant {
+  transform: translateX(2px);
+  color: white;
+}
+
+/* Precio con gradiente futurista */
+.price-futuristic {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }

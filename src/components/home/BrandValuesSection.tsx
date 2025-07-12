@@ -29,7 +29,7 @@ const iconMap: { [key: string]: React.ElementType } = {
 export default function BrandValuesSection({ content }: BrandValuesSectionProps) {
   if (!content || !content.values) {
     return (
-      <section className="py-20 lg:py-32 bg-white">
+      <section className="py-20 lg:py-32 bg-transparent">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center">
             <p className="text-lg text-[var(--accent-gold)]">Contenido de valores de marca no disponible</p>
@@ -40,7 +40,7 @@ export default function BrandValuesSection({ content }: BrandValuesSectionProps)
   }
 
   return (
-    <section className="py-20 lg:py-32 bg-white relative overflow-hidden">
+    <section className="py-20 lg:py-32 bg-transparent relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute top-20 left-10 opacity-10">
         <div className="w-32 h-32 rounded-full bg-[var(--primary-dark)] blur-3xl"></div>

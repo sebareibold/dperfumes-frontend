@@ -356,16 +356,28 @@ export default function CategoryPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.location.href = `/product/${product._id}`
-                      }}
-                      className="w-full py-3 bg-gradient-to-r from-[#2d2a26] to-[#bfa77a] text-white font-serif rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
-                    >
-                      <span>Ver Detalles</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-end justify-between mt-2">
+                      <div>
+                        <span className="text-lg font-semibold text-[#2d2a26]">
+                          {product.volumen && product.volumen.length > 0 ? `$${product.volumen[0].precio}` : 'Sin precio'}
+                        </span>
+                        {/* Precio de envase plástico, si existe */}
+                        {product.volumen && product.volumen.length > 1 && (
+                          <div className="text-xs text-[#2d2a26]/60 font-light mt-1">
+                            Plástico: ${product.volumen[1].precio} ({product.volumen[1].ml}ml)
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.location.href = `/product/${product._id}`
+                        }}
+                        className="btn-primary px-2 py-1 text-xs"
+                      >
+                        Ver Detalles <ArrowRight className="h-3 w-3 ml-1" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
