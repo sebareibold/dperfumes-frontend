@@ -577,7 +577,7 @@ export default function ProductDetail() {
                   <span>Agregar al Carrito</span>
                 </button>
                 <a
-                  href={`https://wa.me/549XXXXXXXXXX?text=Hola!%20Quiero%20consultar%20por%20el%20perfume%20${encodeURIComponent(
+                  href={`https://wa.me/5492991234567?text=Hola!%20Quiero%20consultar%20por%20el%20perfume%20${encodeURIComponent(
                     product?.nombre || ""
                   )}%20(${
                     selectedEnvase?.tipo === "vidrio" ? "Vidrio" : "Plástico"

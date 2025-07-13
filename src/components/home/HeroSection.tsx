@@ -119,6 +119,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
               {content.buttonText}
             </button>
           </div>
+          
           {/* Imagen principal */}
           <div className="flex-1 flex items-center justify-center min-w-[540px] gap-8 relative">
             {/* Imagen principal con efectos mejorados */}

@@ -24,8 +24,7 @@ interface ContactDetailContent {
 }
 
 export default function CartPage() {
-  const { items, updateQuantity, removeFromCart, getTotalPrice } =
-    useCart();
+  const { items, updateQuantity, removeFromCart, getTotalPrice } = useCart();
   const navigate = useNavigate();
   const [contactPhone, setContactPhone] = useState<string | null>(null);
 
@@ -34,11 +33,16 @@ export default function CartPage() {
       try {
         const response = await apiService.getSiteContent();
         if (response.success && response.content?.contact?.contactInfo) {
-          const contactInfo: ContactDetailContent[] = response.content.contact.contactInfo;
+          const contactInfo: ContactDetailContent[] =
+            response.content.contact.contactInfo;
           const phoneInfo = contactInfo.find(
             (info) => info.title === "Teléfono"
           );
-          if (phoneInfo && Array.isArray(phoneInfo.details) && phoneInfo.details[0]) {
+          if (
+            phoneInfo &&
+            Array.isArray(phoneInfo.details) &&
+            phoneInfo.details[0]
+          ) {
             // Clean up the phone number for WhatsApp (remove spaces, dashes, etc)
             const raw = phoneInfo.details[0];
             const cleaned = raw.replace(/[^\d+]/g, "");
@@ -93,14 +97,10 @@ export default function CartPage() {
   const subtotal = getTotalPrice();
 
   return (
-    <div
-      className="min-h-screen"
-    >
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-12">
-          <h1
-            className="font-serif text-4xl lg:text-5xl font-light mb-6 text-black"
-          >
+          <h1 className="font-serif text-4xl lg:text-5xl font-light mb-6 text-black">
             Tu Carrito
           </h1>
           <button
@@ -114,17 +114,11 @@ export default function CartPage() {
 
         {items.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl shadow-md border border-black/10">
-            <ShoppingBag
-              className="h-16 w-16 mx-auto mb-6 text-black"
-            />
-            <h2
-              className="font-serif text-2xl font-light mb-4 text-black"
-            >
+            <ShoppingBag className="h-16 w-16 mx-auto mb-6 text-black" />
+            <h2 className="font-serif text-2xl font-light mb-4 text-black">
               Tu carrito está vacío
             </h2>
-            <p
-              className="text-lg font-light mb-8 text-gray-700"
-            >
+            <p className="text-lg font-light mb-8 text-gray-700">
               Parece que aún no has agregado perfumes a tu carrito
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -148,12 +142,8 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-8 mb-12 lg:mb-0">
               <div className="bg-white rounded-2xl shadow-md border border-black/10 overflow-hidden">
-                <div
-                  className="p-6 border-b border-black/10"
-                >
-                  <h2
-                    className="font-serif text-2xl font-light text-black"
-                  >
+                <div className="p-6 border-b border-black/10">
+                  <h2 className="font-serif text-2xl font-light text-black">
                     Perfumes ({items.length})
                   </h2>
                 </div>
@@ -165,9 +155,7 @@ export default function CartPage() {
                       className="p-6 transition-all hover:bg-gray-50 hover:shadow-sm"
                     >
                       <div className="flex items-center">
-                        <div
-                          className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-xl border border-black/10 shadow-sm bg-white"
-                        >
+                        <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-xl border border-black/10 shadow-sm bg-white">
                           <img
                             src={
                               item.image ||
@@ -186,16 +174,12 @@ export default function CartPage() {
                         <div className="ml-6 flex-1">
                           <div className="flex justify-between">
                             <div className="flex-1">
-                              <h3
-                                className="font-serif text-lg font-medium text-black"
-                              >
+                              <h3 className="font-serif text-lg font-medium text-black">
                                 {item.name}
                               </h3>
                               <div className="mt-1 flex items-center space-x-4 text-sm">
                                 {item.size && (
-                                  <span
-                                    className="flex items-center text-gray-700"
-                                  >
+                                  <span className="flex items-center text-gray-700">
                                     <Droplet className="h-4 w-4 mr-1" />
                                     {item.size}
                                   </span>
@@ -208,9 +192,7 @@ export default function CartPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p
-                                className="font-semibold text-lg text-black"
-                              >
+                              <p className="font-semibold text-lg text-black">
                                 ${item.price.toLocaleString()}
                               </p>
                             </div>
@@ -231,9 +213,7 @@ export default function CartPage() {
                               >
                                 <Minus className="h-4 w-4" />
                               </button>
-                              <span
-                                className="text-lg font-medium min-w-[2rem] text-center text-black"
-                              >
+                              <span className="text-lg font-medium min-w-[2rem] text-center text-black">
                                 {item.quantity}
                               </span>
                               <button
@@ -315,7 +295,8 @@ export default function CartPage() {
                 </div>
                 <div className="mt-6 p-4 rounded-lg bg-gray-50 shadow-md">
                   <p className="text-sm text-center text-gray-700">
-                    ¿Tienes dudas sobre algún perfume? ¡No dudes en consultarnos!
+                    ¿Tienes dudas sobre algún perfume? ¡No dudes en
+                    consultarnos!
                   </p>
                 </div>
               </div>
