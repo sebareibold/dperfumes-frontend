@@ -7,42 +7,33 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api"
 const apiCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
 
-// Cola de peticiones para evitar el error 429 (Too Many Requests)
-const requestQueue: {
-  url: string
-  method: string
-  data?: unknown
-  params?: unknown
-  resolve: (value: unknown) => void
-  reject: (reason?: unknown) => void
-}[] = []
-let isProcessingQueue = false
-const REQUEST_INTERVAL = 100 // 100ms entre peticiones
+// Control de rate limiting simplificado
+let lastRequestTime = 0
+const MIN_REQUEST_INTERVAL = 1000 // 1 segundo entre peticiones
+let isRateLimited = false
+let rateLimitUntil = 0
 
-// Función para procesar la cola de peticiones
-const processRequestQueue = async () => {
-  if (isProcessingQueue || requestQueue.length === 0) {
-    return
+// Función para hacer peticiones con rate limiting
+const makeRequest = async (url: string, method: string, data?: unknown, params?: unknown) => {
+  const now = Date.now()
+  
+  // Verificar si estamos en rate limiting
+  if (isRateLimited && now < rateLimitUntil) {
+    const waitTime = rateLimitUntil - now
+    console.log(`⏳ Rate limit activo. Esperando ${Math.ceil(waitTime / 1000)} segundos...`)
+    await new Promise((res) => setTimeout(res, waitTime))
+    isRateLimited = false
+    rateLimitUntil = 0
   }
-
-  isProcessingQueue = true
-
-  while (requestQueue.length > 0) {
-    const { url, method, data, params, resolve, reject } = requestQueue.shift()!
-    try {
-      const response = await makeRequestWithDelay(url, method, data, params)
-      resolve(response)
-    } catch (error) {
-      reject(error)
-    }
-    await new Promise((res) => setTimeout(res, REQUEST_INTERVAL)) // Esperar antes de la siguiente petición
+  
+  // Asegurar intervalo mínimo entre peticiones
+  if (now - lastRequestTime < MIN_REQUEST_INTERVAL) {
+    const waitTime = MIN_REQUEST_INTERVAL - (now - lastRequestTime)
+    await new Promise((res) => setTimeout(res, waitTime))
   }
+  
+  lastRequestTime = Date.now()
 
-  isProcessingQueue = false
-}
-
-// Función auxiliar para hacer peticiones con delay
-const makeRequestWithDelay = async (url: string, method: string, data?: unknown, params?: unknown) => {
   const config = {
     method,
     url: `${API_BASE_URL}${url}`,
@@ -55,25 +46,29 @@ const makeRequestWithDelay = async (url: string, method: string, data?: unknown,
   }
 
   try {
+    console.log(`📡 Haciendo petición ${method.toUpperCase()} a ${url}`)
     const response = await axios(config)
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      console.error(`Error en la petición ${method} ${url}:`, error.response.status, error.response.data)
+      console.error(`❌ Error ${error.response.status} en ${method} ${url}:`, error.response.data)
+      
+      // Manejar específicamente el error 429 (Too Many Requests)
+      if (error.response.status === 429) {
+        const retryAfter = error.response.data.retryAfter || 900
+        isRateLimited = true
+        rateLimitUntil = Date.now() + (retryAfter * 1000)
+        
+        console.warn(`🚫 Rate limit alcanzado. Esperando ${retryAfter} segundos.`)
+        throw new Error(`Rate limit alcanzado. Intenta de nuevo en ${Math.ceil(retryAfter / 60)} minutos.`)
+      }
+      
       throw new Error(error.response.data.message || `Error en la petición: ${error.response.status}`)
     } else {
-      console.error(`Error desconocido en la petición ${method} ${url}:`, error)
+      console.error(`❌ Error desconocido en ${method} ${url}:`, error)
       throw new Error("Error de red o desconocido")
     }
   }
-}
-
-// Función para encolar una petición
-const queueRequest = (url: string, method: string, data?: unknown, params?: unknown) => {
-  return new Promise((resolve, reject) => {
-    requestQueue.push({ url, method, data, params, resolve, reject })
-    processRequestQueue() // Iniciar procesamiento si no está activo
-  })
 }
 
 // Interfaces para perfumes
@@ -151,8 +146,8 @@ export const apiService = {
   },
 
   // Función genérica para hacer peticiones GET con caché
-  get: async (url: string, params?: any) => {
-    const cacheKey = `${url}?${new URLSearchParams(params).toString()}`
+  get: async (url: string, params?: Record<string, unknown>) => {
+    const cacheKey = `${url}?${new URLSearchParams(params as Record<string, string>).toString()}`
     const cached = apiCache.get(cacheKey)
 
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
@@ -161,7 +156,7 @@ export const apiService = {
     }
 
     try {
-      const response = await queueRequest(url, "get", undefined, params)
+      const response = await makeRequest(url, "get", undefined, params)
       apiCache.set(cacheKey, { data: response, timestamp: Date.now() })
       return response
     } catch (error) {
@@ -171,9 +166,9 @@ export const apiService = {
   },
 
   // Función genérica para hacer peticiones POST
-  post: async (url: string, data: any) => {
+  post: async (url: string, data?: Record<string, unknown>) => {
     try {
-      const response = await queueRequest(url, "post", data)
+      const response = await makeRequest(url, "post", data)
       // Invalidar caché relevante después de un POST
       if (url.startsWith("/products")) apiService.clearPerfumesCache()
       if (url.startsWith("/orders")) apiService.clearOrdersCache()
@@ -186,9 +181,9 @@ export const apiService = {
   },
 
   // Función genérica para hacer peticiones PUT
-  put: async (url: string, data: any) => {
+  put: async (url: string, data?: Record<string, unknown>) => {
     try {
-      const response = await queueRequest(url, "put", data)
+      const response = await makeRequest(url, "put", data)
       // Invalidar caché relevante después de un PUT
       if (url.startsWith("/products")) apiService.clearPerfumesCache()
       if (url.startsWith("/orders")) apiService.clearOrdersCache()
@@ -203,7 +198,7 @@ export const apiService = {
   // Función genérica para hacer peticiones DELETE
   del: async (url: string) => {
     try {
-      const response = await queueRequest(url, "delete")
+      const response = await makeRequest(url, "delete")
       // Invalidar caché relevante después de un DELETE
       if (url.startsWith("/products")) apiService.clearPerfumesCache()
       if (url.startsWith("/orders")) apiService.clearOrdersCache()
@@ -216,11 +211,11 @@ export const apiService = {
   },
 
   // Auth Endpoints
-  login: async (credentials: any) => {
+  login: async (credentials: Record<string, unknown>) => {
     try {
-      const response = (await apiService.post("/auth/login", credentials)) as any
+      const response = (await apiService.post("/auth/login", credentials)) as Record<string, unknown>
       if (response.token) {
-        localStorage.setItem("token", response.token)
+        localStorage.setItem("token", response.token as string)
       }
       return { success: true, user: response.user, token: response.token }
     } catch (error: unknown) {
@@ -247,7 +242,7 @@ export const apiService = {
     try {
       const response = (await apiService.get("/auth/check", {
         headers: { Authorization: `Bearer ${token}` },
-      })) as any
+      })) as Record<string, unknown>
       return { success: true, user: response.user }
     } catch (error: unknown) {
       console.error("Error checking auth:", error)
@@ -257,9 +252,9 @@ export const apiService = {
   },
 
   // User Profile Endpoints
-  updateProfile: async (profileData: any) => {
+  updateProfile: async (profileData: Record<string, unknown>) => {
     try {
-      const response = (await apiService.put("/users/profile", profileData)) as any
+      const response = (await apiService.put("/users/profile", profileData)) as Record<string, unknown>
       return { success: true, user: response.user }
     } catch (error: unknown) {
       return {
@@ -271,9 +266,9 @@ export const apiService = {
     }
   },
 
-  updatePassword: async (passwordData: any) => {
+  updatePassword: async (passwordData: Record<string, unknown>) => {
     try {
-      const response = (await apiService.put("/users/password", passwordData)) as any
+      const response = (await apiService.put("/users/password", passwordData)) as Record<string, unknown>
       return { success: true, message: response.message }
     } catch (error: unknown) {
       return {
@@ -286,9 +281,9 @@ export const apiService = {
   },
 
   // Perfume Endpoints (actualizados para el esquema de perfumes)
-  getProducts: async (params?: any) => {
+  getProducts: async (params?: Record<string, unknown>) => {
     try {
-      const response = (await apiService.get("/products", params)) as any
+      const response = (await apiService.get("/products", params)) as Record<string, unknown>
       return {
         success: response.status === "success",
         payload: response.payload as Perfume[],
@@ -316,8 +311,8 @@ export const apiService = {
 
   getProduct: async (id: string) => {
     try {
-      const response = (await apiService.get(`/products/${id}`)) as any
-      return { success: true, product: response.producto as Perfume }
+      const response = (await apiService.get(`/products/${id}`)) as Record<string, unknown>
+      return { success: true, product: response.product as Perfume }
     } catch (error: unknown) {
       return {
         success: false,

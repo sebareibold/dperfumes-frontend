@@ -6,7 +6,6 @@ import {
   Phone,
   MapPin,
   Clock,
-  Send,
   Instagram,
   Facebook,
   X,
@@ -14,8 +13,6 @@ import {
   Linkedin,
   Github,
   Globe,
-  Sparkles,
-  Star,
 } from "lucide-react"
 import { useState } from "react"
 import { apiService } from "../../services/api"
@@ -123,22 +120,20 @@ export default function ContactSection({ content }: ContactSectionProps) {
   }
 
   return (
-    <section className="py-20 lg:py-32 bg-transparent flex justify-center items-center">
-      <div className="max-w-5xl w-full mx-auto bg-white rounded-2xl shadow-elegant overflow-hidden flex flex-col md:flex-row items-center justify-center min-h-[420px]">
-        {/* Tarjeta de información de contacto tipo squircle */}
+    <section className="py-40 lg:py-32flex justify-center items-center ">
+      <div className="max-w-5xl w-full mx-auto bg-white rounded-2xl border border-black/10 shadow-none flex flex-col md:flex-row items-center justify-center min-h-[420px]">
+        {/* Tarjeta de información de contacto */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 h-full">
-          <div className="bg-[var(--primary-dark)] rounded-[32px] p-10 flex flex-col justify-between items-start w-[90%] h-[95%] min-h-[650px] max-w-[550px] mx-auto my-8 relative">
-            {/* Círculo decorativo */}
-     
+          <div className="bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900 border border-black/10 rounded-2xl p-10 flex flex-col justify-between items-start w-[90%] h-[95%] min-h-[650px] max-w-[550px] mx-auto my-8 relative">
             <div className="relative z-10 w-full">
-              <h3 className="text-xl font-bold text-white mb-4">Información de Contacto</h3>
+              <h3 className="font-serif text-2xl font-semibold text-white mb-4 uppercase tracking-widest">Información de Contacto</h3>
               <p className="text-white/80 text-sm mb-8">{content.description}</p>
               <div className="space-y-6 mb-8">
-                {content.contactInfo.map((info, idx) => {
+                {content.contactInfo.map((info) => {
                   const IconComponent = iconMap[info.icon] || Mail
                   return (
                     <div key={info.title} className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-[10] h-10 flex items-center justify-center rounded-full bg-[var(--primary-dark-alt)]">
+                      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10">
                         <IconComponent className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -146,19 +141,18 @@ export default function ContactSection({ content }: ContactSectionProps) {
                         {info.details.map((detail, i) => (
                           <p key={i} className="text-white/80 text-sm leading-tight">{detail}</p>
                         ))}
-                        {info.description && <p className="text-xs text-[var(--accent-gold)] mt-1">{info.description}</p>}
+                        {info.description && <p className="text-xs text-white/50 mt-1">{info.description}</p>}
                       </div>
                     </div>
                   )
                 })}
-                       <div className="absolute bg-conic-30 -bottom-30 right-0 w-32 h-32 bg-[var(--primary-dark-alt)] opacity-40 rounded-full -mb-10 -mr-10"></div>
               </div>
               {/* Redes sociales */}
               {content.socialMedia && content.socialMedia.length > 0 && (
                 <div className="mt-8">
                   <h4 className="text-white font-semibold text-base mb-3">Redes Sociales</h4>
                   <div className="flex flex-row gap-4">
-                    {content.socialMedia.map((sm, idx) => {
+                    {content.socialMedia.map((sm) => {
                       const IconComponent = iconMap[sm.icon] || Mail
                       return (
                         <a
@@ -166,7 +160,7 @@ export default function ContactSection({ content }: ContactSectionProps) {
                           href={sm.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-[var(--primary-dark-alt)] p-2 rounded-full hover:bg-[var(--accent-gold)] transition-all duration-300 hover:scale-110"
+                          className="bg-white/10 border border-white/20 p-2 rounded-full hover:bg-white hover:text-black transition-all duration-300 hover:scale-110"
                         >
                           <IconComponent className="h-5 w-5 text-white" />
                         </a>
@@ -184,15 +178,15 @@ export default function ContactSection({ content }: ContactSectionProps) {
           onSubmit={handleSubmit}
           autoComplete="off"
         >
-          <h3 className="font-serif text-2xl font-bold text-[var(--primary-dark)] mb-2">{content.formTitle}</h3>
-          <p className="text-[var(--text-aux)] text-sm mb-4">{content.formDescription}</p>
+          <h3 className="font-serif text-2xl font-semibold text-black mb-2 uppercase tracking-widest">{content.formTitle}</h3>
+          <p className="text-black/60 text-sm mb-4">{content.formDescription}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Nombre Completo *</label>
+              <label className="block text-black text-xs font-medium mb-1 uppercase tracking-widest">Nombre Completo *</label>
               <input
                 type="text"
                 name="name"
-                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                className="w-full border border-black/20 rounded-full bg-white text-black placeholder-black/30 focus:outline-none focus:border-black px-4 py-2 transition-all text-sm"
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Tu nombre"
@@ -200,11 +194,11 @@ export default function ContactSection({ content }: ContactSectionProps) {
               />
             </div>
             <div>
-              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Email *</label>
+              <label className="block text-black text-xs font-medium mb-1 uppercase tracking-widest">Email *</label>
               <input
                 type="email"
                 name="email"
-                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                className="w-full border border-black/20 rounded-full bg-white text-black placeholder-black/30 focus:outline-none focus:border-black px-4 py-2 transition-all text-sm"
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="tucorreo@email.com"
@@ -212,22 +206,22 @@ export default function ContactSection({ content }: ContactSectionProps) {
               />
             </div>
             <div>
-              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Teléfono</label>
+              <label className="block text-black text-xs font-medium mb-1 uppercase tracking-widest">Teléfono</label>
               <input
                 type="tel"
                 name="phone"
-                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                className="w-full border border-black/20 rounded-full bg-white text-black placeholder-black/30 focus:outline-none focus:border-black px-4 py-2 transition-all text-sm"
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="Opcional"
               />
             </div>
             <div>
-              <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Asunto *</label>
+              <label className="block text-black text-xs font-medium mb-1 uppercase tracking-widest">Asunto *</label>
               <input
                 type="text"
                 name="subject"
-                className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 transition-all"
+                className="w-full border border-black/20 rounded-full bg-white text-black placeholder-black/30 focus:outline-none focus:border-black px-4 py-2 transition-all text-sm"
                 value={formData.subject}
                 onChange={handleInputChange}
                 placeholder="Motivo del mensaje"
@@ -236,10 +230,10 @@ export default function ContactSection({ content }: ContactSectionProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[var(--primary-dark)] text-sm font-medium mb-1">Mensaje *</label>
+            <label className="block text-black text-xs font-medium mb-1 uppercase tracking-widest">Mensaje *</label>
             <textarea
               name="message"
-              className="w-full border-0 border-b-2 border-[var(--primary-dark)] bg-transparent text-[var(--primary-dark)] placeholder-[var(--text-aux-light)] focus:outline-none focus:border-[var(--accent-gold)] py-2 min-h-[100px] transition-all"
+              className="w-full border border-black/20 rounded-2xl bg-white text-black placeholder-black/30 focus:outline-none focus:border-black px-4 py-2 min-h-[100px] transition-all text-sm"
               value={formData.message}
               onChange={handleInputChange}
               placeholder="Escribe tu mensaje..."
@@ -250,12 +244,12 @@ export default function ContactSection({ content }: ContactSectionProps) {
           {successMessage && <p className="text-green-600 text-sm font-medium">{successMessage}</p>}
           <button
             type="submit"
-            className="mt-2 border-2 border-[var(--primary-dark)] text-[var(--primary-dark)] bg-transparent px-8 py-3 rounded-[var(--radius-btn)] font-semibold uppercase tracking-wide transition-all duration-300 hover:bg-[var(--primary-dark)] hover:text-[var(--neutral-white)] shadow-none"
+            className="mt-2 border-2 border-black text-black bg-white px-8 py-3 rounded-full font-sans text-xs uppercase tracking-widest font-normal transition-all duration-300 hover:bg-black hover:text-white focus:outline-none shadow-none hover:shadow-lg"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Enviando..." : "Enviar Mensaje"}
           </button>
-          <p className="text-xs text-[var(--text-aux)] mt-2">{content.responseDisclaimer}</p>
+          <p className="text-xs text-black/40 mt-2">{content.responseDisclaimer}</p>
         </form>
       </div>
     </section>

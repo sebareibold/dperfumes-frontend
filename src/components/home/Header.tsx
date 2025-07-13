@@ -13,6 +13,7 @@ export default function Header() {
   const navItems = [
     { name: "Inicio", action: () => { setIsMenuOpen(false); navigate("/") } },
     { name: "Fragancias", action: () => { setIsMenuOpen(false); navigate("/#products") } },
+    { name: "Seguimiento", action: () => { setIsMenuOpen(false); navigate("/order-tracking") } },
     { name: "Contacto", action: () => { setIsMenuOpen(false); navigate("/#contact") } },
   ]
 
@@ -22,21 +23,32 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo/Brand */}
           <div className="flex-1 flex items-center justify-start">
-            <span className="text-2xl font-black tracking-widest gradient-text select-none bg-transparent" style={{ fontFamily: 'Public Sans, sans-serif' }}>Daisy Perfumes</span>
+            <Link to="/" className="flex items-center space-x-3 group">
+              <img 
+                src="/icono_logo.png" 
+                alt="Daisy Perfumes Logo" 
+                className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+              />
+              <img 
+                src="/text_logo.png" 
+                alt="Daisy Perfumes" 
+                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+              />
+            </Link>
           </div>
           {/* Navigation - Desktop */}
           <nav className="flex-1 justify-center hidden md:flex">
-            <ul className="flex space-x-10">
+            <ul className="flex space-x-6">
               {navItems.map((item) => (
                 <li key={item.name}>
                   <button
                     onClick={item.action}
-                    className="font-sans text-base font-semibold text-[var(--primary-dark)] px-6 py-3 focus:outline-none bg-transparent relative overflow-hidden group transition-all duration-500"
+                    className="font-sans text-sm font-normal uppercase tracking-widest text-black px-4 py-2 focus:outline-none bg-transparent relative overflow-hidden group transition-all duration-300"
                   >
-                    <span className="relative z-10 group-hover:text-[var(--primary-blue)] transition-colors duration-500">
+                    <span className="relative z-10 transition-colors duration-300">
                       {item.name}
                     </span>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 group-hover:w-1/2 h-0.5 bg-gradient-to-r from-[var(--primary-blue)] to-[var(--secondary-blue)] rounded-full transition-all duration-500 ease-out"></div>
+                    <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-0 h-[2px] w-0 group-hover:w-full bg-black transition-all duration-300 ease-in-out"></span>
                   </button>
                 </li>
               ))}
@@ -49,7 +61,7 @@ export default function Header() {
                 <ShoppingBag className="h-6 w-6 text-[var(--primary-dark)] group-hover:text-[var(--primary-blue)] icon-elegant transition-colors duration-300" />
               </div>
               {getTotalItems() > 0 && (
-                <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium badge-gradient shadow-lg">
+                <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium bg-black shadow-lg">
                   {getTotalItems()}
                 </span>
               )}

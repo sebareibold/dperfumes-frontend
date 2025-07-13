@@ -3,15 +3,15 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="bg-transparent text-[var(--neutral-white)] py-8 md:py-12 border-t border-[var(--primary-blue)]/30 shadow-elegant-lg">
+    <footer className="bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900 text-white py-8 md:py-12 border-t border-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           {/* Brand and Purpose */}
           <div className="md:col-span-1 text-center md:text-left">
-            <h3 className="font-serif text-2xl font-bold tracking-wide mb-2 gradient-text">
-              Daisy <span className="font-light italic text-[var(--neutral-white)]">Perfumes</span>
+            <h3 className="font-serif text-2xl font-bold tracking-wide mb-2">
+              Daisy <span className="font-light italic text-white">Perfumes</span>
             </h3>
-            <p className="text-[var(--neutral-white)] font-light mb-4 max-w-md mx-auto md:mx-0 leading-relaxed text-sm">
+            <p className="text-white/80 font-light mb-4 max-w-md mx-auto md:mx-0 leading-relaxed text-sm">
               Fragancias modernas y elegantes para quienes buscan distinción y sofisticación en cada detalle.
             </p>
             <div className="flex space-x-3 justify-center md:justify-start">
@@ -19,9 +19,9 @@ export default function Footer() {
                 <a
                   key={index}
                   href="#"
-                  className="badge-gradient p-2 rounded-full hover:scale-110 transition-all duration-300 shadow-elegant"
+                  className="bg-white/10 border border-white/20 p-2 rounded-full hover:bg-white hover:text-black transition-all duration-300 hover:scale-110"
                 >
-                  <Icon className="h-4 w-4 text-[var(--neutral-white)] icon-elegant" />
+                  <Icon className="h-4 w-4 text-white" />
                 </a>
               ))}
             </div>
@@ -29,10 +29,10 @@ export default function Footer() {
 
           {/* Designer Info */}
           <div className="md:col-span-1 text-center md:text-right mt-4 md:mt-0">
-            <div className="font-light text-sm text-[var(--neutral-white)] space-y-1">
-              <p className="text-xs text-[var(--primary-blue)] uppercase tracking-wide">Desarrollado por</p>
+            <div className="font-light text-sm text-white/80 space-y-1">
+              <p className="text-xs text-white/50 uppercase tracking-wide">Desarrollado por</p>
               <p className="font-medium">Sebastián Alejandro Reibold</p>
-              <p className="text-xs text-[var(--primary-blue)]">Obbware Technology</p>
+              <p className="text-xs text-white/50">Obbware Technology</p>
             </div>
           </div>
         </div>
@@ -41,7 +41,7 @@ export default function Footer() {
       <div className="flex justify-center mt-4 mb-2">
         <Link
           to="/admin"
-          className="btn-primary gradient-hover"
+          className="border-2 border-white text-white bg-transparent px-8 py-3 rounded-full font-sans text-xs uppercase tracking-widest font-normal transition-all duration-300 hover:bg-white hover:text-black focus:outline-none shadow-none hover:shadow-lg"
         >
           Ir al Backoffice
         </Link>

@@ -95,20 +95,17 @@ export default function CartPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: "var(--soft-creme)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-12">
           <h1
-            className="font-serif text-4xl lg:text-5xl font-light mb-6"
-            style={{ color: "var(--deep-clay)" }}
+            className="font-serif text-4xl lg:text-5xl font-light mb-6 text-black"
           >
             Tu Carrito
           </h1>
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-sm font-medium"
-            style={{ color: "var(--clay)" }}
+            className="flex items-center text-sm font-medium transition-all hover:opacity-70 text-black"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Continuar comprando
@@ -116,39 +113,30 @@ export default function CartPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-warm">
+          <div className="text-center py-20 bg-white rounded-2xl shadow-md border border-black/10">
             <ShoppingBag
-              className="h-16 w-16 mx-auto mb-6"
-              style={{ color: "var(--oak)" }}
+              className="h-16 w-16 mx-auto mb-6 text-black"
             />
             <h2
-              className="font-serif text-2xl font-light mb-4"
-              style={{ color: "var(--deep-clay)" }}
+              className="font-serif text-2xl font-light mb-4 text-black"
             >
               Tu carrito está vacío
             </h2>
             <p
-              className="text-lg font-light mb-8"
-              style={{ color: "var(--oak)" }}
+              className="text-lg font-light mb-8 text-gray-700"
             >
               Parece que aún no has agregado perfumes a tu carrito
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
                 to="/"
-                className="inline-block px-10 py-4 text-white font-medium text-sm uppercase tracking-wider rounded-xl shadow-warm-lg transition-all hover:scale-105"
-                style={{ backgroundColor: "var(--clay)" }}
+                className="inline-block px-10 py-4 text-black font-medium text-sm uppercase tracking-wider rounded-xl shadow-md border border-black bg-white transition-all hover:bg-black hover:text-white"
               >
                 Explorar perfumes
               </Link>
               <button
                 onClick={handleWhatsAppConsult}
-                className="inline-flex items-center px-8 py-4 border-2 font-medium text-sm uppercase tracking-wider rounded-xl transition-all hover:scale-105"
-                style={{
-                  borderColor: "var(--clay)",
-                  color: "var(--clay)",
-                  backgroundColor: "transparent",
-                }}
+                className="inline-flex items-center px-8 py-4 border-2 font-medium text-sm uppercase tracking-wider rounded-xl transition-all hover:scale-105 bg-white border-green-600 text-green-700 hover:bg-green-600 hover:text-white shadow-md"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Consultar por WhatsApp
@@ -159,29 +147,26 @@ export default function CartPage() {
           <div className="lg:grid lg:grid-cols-12 lg:gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-8 mb-12 lg:mb-0">
-              <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-md border border-black/10 overflow-hidden">
                 <div
-                  className="p-6 border-b"
-                  style={{ borderColor: "var(--bone)" }}
+                  className="p-6 border-b border-black/10"
                 >
                   <h2
-                    className="font-serif text-2xl font-light"
-                    style={{ color: "var(--deep-clay)" }}
+                    className="font-serif text-2xl font-light text-black"
                   >
                     Perfumes ({items.length})
                   </h2>
                 </div>
 
-                <ul className="divide-y">
+                <ul className="divide-y divide-black/10">
                   {items.map((item) => (
                     <li
                       key={`${item.id}-${item.size}-${item.color || ""}`}
-                      className="p-6"
+                      className="p-6 transition-all hover:bg-gray-50 hover:shadow-sm"
                     >
                       <div className="flex items-center">
                         <div
-                          className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-xl border"
-                          style={{ borderColor: "var(--bone)" }}
+                          className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-xl border border-black/10 shadow-sm bg-white"
                         >
                           <img
                             src={
@@ -202,23 +187,21 @@ export default function CartPage() {
                           <div className="flex justify-between">
                             <div className="flex-1">
                               <h3
-                                className="font-serif text-lg font-medium"
-                                style={{ color: "var(--deep-clay)" }}
+                                className="font-serif text-lg font-medium text-black"
                               >
                                 {item.name}
                               </h3>
                               <div className="mt-1 flex items-center space-x-4 text-sm">
                                 {item.size && (
                                   <span
-                                    className="flex items-center"
-                                    style={{ color: "var(--oak)" }}
+                                    className="flex items-center text-gray-700"
                                   >
                                     <Droplet className="h-4 w-4 mr-1" />
                                     {item.size}
                                   </span>
                                 )}
                                 {item.color && item.color !== "Único" && (
-                                  <span style={{ color: "var(--oak)" }}>
+                                  <span className="text-gray-700">
                                     {item.color}
                                   </span>
                                 )}
@@ -226,8 +209,7 @@ export default function CartPage() {
                             </div>
                             <div className="text-right">
                               <p
-                                className="font-semibold text-lg"
-                                style={{ color: "var(--deep-clay)" }}
+                                className="font-semibold text-lg text-black"
                               >
                                 ${item.price.toLocaleString()}
                               </p>
@@ -245,14 +227,12 @@ export default function CartPage() {
                                     item.color
                                   )
                                 }
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-                                style={{ color: "var(--clay)" }}
+                                className="p-2 rounded-lg bg-white border border-black/10 hover:bg-black hover:text-white transition-all shadow-sm text-black"
                               >
                                 <Minus className="h-4 w-4" />
                               </button>
                               <span
-                                className="text-lg font-medium min-w-[2rem] text-center"
-                                style={{ color: "var(--deep-clay)" }}
+                                className="text-lg font-medium min-w-[2rem] text-center text-black"
                               >
                                 {item.quantity}
                               </span>
@@ -265,8 +245,7 @@ export default function CartPage() {
                                     item.color
                                   )
                                 }
-                                className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-                                style={{ color: "var(--clay)" }}
+                                className="p-2 rounded-lg bg-white border border-black/10 hover:bg-black hover:text-white transition-all shadow-sm text-black"
                               >
                                 <Plus className="h-4 w-4" />
                               </button>
@@ -275,8 +254,7 @@ export default function CartPage() {
                               onClick={() =>
                                 removeFromCart(item.id, item.size, item.color)
                               }
-                              className="p-2 rounded-lg hover:bg-red-50 transition-colors"
-                              style={{ color: "var(--oak)" }}
+                              className="p-2 rounded-lg bg-white border border-black/10 hover:bg-red-600 hover:text-white transition-all shadow-sm text-black"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -291,81 +269,52 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-4">
-              <div className="bg-white rounded-2xl shadow-warm p-6 sticky top-6">
-                <h2
-                  className="font-serif text-2xl font-light mb-6"
-                  style={{ color: "var(--deep-clay)" }}
-                >
+              <div className="bg-white rounded-2xl shadow-lg border border-black/10 p-6 sticky top-6">
+                <h2 className="font-serif text-2xl font-light mb-6 text-black">
                   Resumen del Pedido
                 </h2>
-
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
-                    <span style={{ color: "var(--oak)" }}>Subtotal</span>
-                    <span
-                      className="font-medium"
-                      style={{ color: "var(--deep-clay)" }}
-                    >
+                    <span className="text-gray-700">Subtotal</span>
+                    <span className="font-medium text-black">
                       ${subtotal.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span style={{ color: "var(--oak)" }}>Envío</span>
-                    <span
-                      className="font-medium"
-                      style={{ color: "var(--deep-clay)" }}
-                    >
+                    <span className="text-gray-700">Envío</span>
+                    <span className="font-medium text-black">
                       Calculado al finalizar
                     </span>
                   </div>
-                  <div
-                    className="border-t pt-4"
-                    style={{ borderColor: "var(--bone)" }}
-                  >
+                  <div className="border-t pt-4 border-black/10">
                     <div className="flex justify-between">
-                      <span
-                        className="text-lg font-medium"
-                        style={{ color: "var(--deep-clay)" }}
-                      >
+                      <span className="text-lg font-medium text-black">
                         Total estimado
                       </span>
-                      <span
-                        className="text-lg font-semibold"
-                        style={{ color: "var(--deep-clay)" }}
-                      >
+                      <span className="text-lg font-semibold text-black">
                         ${subtotal.toLocaleString()}
                       </span>
                     </div>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <button
                     onClick={handleVirtualOrder}
-                    className="w-full py-4 px-6 rounded-xl text-white font-medium text-sm uppercase tracking-wider shadow-warm-lg transition-all hover:scale-105 flex items-center justify-center"
-                    style={{
-                      background: "linear-gradient(to right, var(--clay), var(--dark-clay))",
-                    }}
+                    className="w-full py-4 px-6 rounded-xl border-2 border-black text-black bg-white font-semibold text-base uppercase tracking-wider shadow-lg transition-all duration-300 hover:bg-black hover:scale-103 hover:text-white hover:shadow-xl flex items-center justify-center group"
                   >
-                    <CreditCard className="h-5 w-5 mr-2" />
+                    <CreditCard className="h-6 w-6 mr-2 group-hover:text-white text-black transition-colors duration-300" />
                     Finalizar Compra
                   </button>
                   <button
                     onClick={handleWhatsAppConsult}
-                    className="w-full py-4 px-6 rounded-xl border-2 font-medium text-sm uppercase tracking-wider transition-all hover:scale-105 flex items-center justify-center"
-                    style={{
-                      borderColor: "var(--clay)",
-                      color: "var(--clay)",
-                      backgroundColor: "transparent",
-                    }}
+                    className="w-full py-4 px-6 rounded-xl border-2 font-medium text-sm uppercase tracking-wider transition-all hover:scale-103 bg-white border-green-600 text-green-700 hover:bg-green-600 hover:text-white shadow-lg flex items-center justify-center"
                   >
                     <MessageCircle className="h-5 w-5 mr-2" />
                     Consultar por WhatsApp
                   </button>
                 </div>
-
-                <div className="mt-6 p-4 rounded-lg" style={{ backgroundColor: "var(--bone)" }}>
-                  <p className="text-sm text-center" style={{ color: "var(--oak)" }}>
+                <div className="mt-6 p-4 rounded-lg bg-gray-50 shadow-md">
+                  <p className="text-sm text-center text-gray-700">
                     ¿Tienes dudas sobre algún perfume? ¡No dudes en consultarnos!
                   </p>
                 </div>

@@ -351,21 +351,16 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl shadow-warm p-4 sm:p-6 lg:p-8">
               {/* Opción de Envío - Mejorado para móvil */}
               <div className="mb-8 sm:mb-10">
-                <h2
-                  className="font-serif text-lg sm:text-2xl font-light mb-4 sm:mb-6"
-                  style={{ color: "var(--deep-clay)" }}
-                >
+                <h2 className="font-serif text-lg sm:text-2xl font-light mb-4 sm:mb-6 text-black">
                   Opciones de Entrega
                 </h2>
-
                 <div className="space-y-3 sm:space-y-4">
+                  {/* Retiro en punto de encuentro */}
                   <div
-                    className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${
-                      !wantsShipping ? "shadow-warm" : "hover:shadow-warm"
-                    }`}
+                    className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${!wantsShipping ? "shadow-md" : "hover:shadow-md"}`}
                     style={{
-                      borderColor: !wantsShipping ? "var(--clay)" : "var(--bone)",
-                      backgroundColor: !wantsShipping ? "var(--bone)" : "var(--pure-white)",
+                      borderColor: !wantsShipping ? "#000" : "#e5e7eb",
+                      background: !wantsShipping ? "linear-gradient(90deg, #333 0%, #000 100%)" : "#fff",
                     }}
                     onClick={() => setWantsShipping(false)}
                   >
@@ -373,37 +368,33 @@ export default function CheckoutPage() {
                       <div
                         className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0 mt-1 sm:mt-0"
                         style={{
-                          borderColor: !wantsShipping ? "var(--clay)" : "var(--oak)",
-                          backgroundColor: !wantsShipping ? "var(--clay)" : "transparent",
+                          borderColor: !wantsShipping ? "#fff" : "#000",
+                          backgroundColor: !wantsShipping ? "#fff" : "#fff",
                         }}
                       >
-                        {!wantsShipping && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-white" />}
+                        {!wantsShipping && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-black" />}
                       </div>
                       <div className="flex items-start sm:items-center">
-                        <MapPin
-                          className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0"
-                          style={{ color: "var(--clay)" }}
-                        />
+                        <MapPin className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0 text-white" />
                         <div>
-                          <h3 className="font-medium text-sm sm:text-base" style={{ color: "var(--deep-clay)" }}>
+                          <h3 className="font-medium text-sm sm:text-base" style={{ color: !wantsShipping ? "#fff" : "#111" }}>
                             {checkoutContent?.deliveryInfo.meetingPoint.title || "Retiro en Punto de Encuentro"}
                           </h3>
-                          <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
-                            {checkoutContent?.deliveryInfo.meetingPoint.description ||
-                              "Coordinaremos el punto de encuentro para la entrega"}
+                          <p className="text-xs sm:text-sm mt-1" style={{ color: !wantsShipping ? "#fff" : "#444" }}>
+                            {checkoutContent?.deliveryInfo.meetingPoint.description || "Coordinaremos el punto de encuentro para la entrega"}
                           </p>
                           {checkoutContent?.deliveryInfo.meetingPoint.address && (
-                            <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: "var(--clay)" }}>
+                            <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: !wantsShipping ? "#fff" : "#111" }}>
                               {checkoutContent.deliveryInfo.meetingPoint.address}
                             </p>
                           )}
                           {checkoutContent?.deliveryInfo.meetingPoint.schedule && (
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: !wantsShipping ? "#fff" : "#444" }}>
                               {checkoutContent.deliveryInfo.meetingPoint.schedule}
                             </p>
                           )}
                           {checkoutContent?.deliveryInfo.meetingPoint.notes && (
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: !wantsShipping ? "#fff" : "#444" }}>
                               {checkoutContent.deliveryInfo.meetingPoint.notes}
                             </p>
                           )}
@@ -411,14 +402,12 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-
+                  {/* Envío a domicilio */}
                   <div
-                    className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${
-                      wantsShipping ? "shadow-warm" : "hover:shadow-warm"
-                    }`}
+                    className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${wantsShipping ? "shadow-md" : "hover:shadow-md"}`}
                     style={{
-                      borderColor: wantsShipping ? "var(--clay)" : "var(--bone)",
-                      backgroundColor: wantsShipping ? "var(--bone)" : "var(--pure-white)",
+                      borderColor: wantsShipping ? "#000" : "#e5e7eb",
+                      background: wantsShipping ? "linear-gradient(90deg, #333 0%, #000 100%)" : "#fff",
                     }}
                     onClick={() => setWantsShipping(true)}
                   >
@@ -426,44 +415,40 @@ export default function CheckoutPage() {
                       <div
                         className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0 mt-1 sm:mt-0"
                         style={{
-                          borderColor: wantsShipping ? "var(--clay)" : "var(--oak)",
-                          backgroundColor: wantsShipping ? "var(--clay)" : "transparent",
+                          borderColor: wantsShipping ? "#fff" : "#000",
+                          backgroundColor: wantsShipping ? "#fff" : "#fff",
                         }}
                       >
-                        {wantsShipping && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-white" />}
+                        {wantsShipping && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-black" />}
                       </div>
                       <div className="flex items-start sm:items-center">
-                        <Truck
-                          className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0"
-                          style={{ color: "var(--clay)" }}
-                        />
+                        <Truck className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0 text-white" />
                         <div>
-                          <h3 className="font-medium text-sm sm:text-base" style={{ color: "var(--deep-clay)" }}>
+                          <h3 className="font-medium text-sm sm:text-base" style={{ color: wantsShipping ? "#fff" : "#111" }}>
                             {checkoutContent?.shipping.homeDelivery.title || "Envío a Domicilio"}
                           </h3>
-                          <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
-                            {checkoutContent?.shipping.homeDelivery.description ||
-                              "Los envíos tienen un costo adicional según tu ubicación"}
+                          <p className="text-xs sm:text-sm mt-1" style={{ color: wantsShipping ? "#fff" : "#444" }}>
+                            {checkoutContent?.shipping.homeDelivery.description || "Los envíos tienen un costo adicional según tu ubicación"}
                           </p>
                           {checkoutContent?.shipping.homeDelivery.coverage && (
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: wantsShipping ? "#fff" : "#444" }}>
                               Cobertura: {checkoutContent.shipping.homeDelivery.coverage}
                             </p>
                           )}
                           {checkoutContent?.shipping.homeDelivery.estimatedDays && (
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: wantsShipping ? "#fff" : "#444" }}>
                               Tiempo estimado: {checkoutContent.shipping.homeDelivery.estimatedDays}
                             </p>
                           )}
                           {checkoutContent?.shipping.homeDelivery.freeShippingThreshold &&
                             subtotal >= checkoutContent.shipping.homeDelivery.freeShippingThreshold && (
-                              <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: "var(--clay)" }}>
+                              <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: wantsShipping ? "#fff" : "#111" }}>
                                 ¡Envío gratis! Tu compra supera los $
                                 {checkoutContent.shipping.homeDelivery.freeShippingThreshold.toLocaleString()}
                               </p>
                             )}
                           {checkoutContent?.shipping.homeDelivery.notes && (
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: wantsShipping ? "#fff" : "#444" }}>
                               {checkoutContent.shipping.homeDelivery.notes}
                             </p>
                           )}
@@ -640,23 +625,17 @@ export default function CheckoutPage() {
 
               {/* Método de Pago - Optimizado para móvil */}
               <div>
-                <h2
-                  className="font-serif text-lg sm:text-2xl font-light mb-4 sm:mb-6"
-                  style={{ color: "var(--deep-clay)" }}
-                >
+                <h2 className="font-serif text-lg sm:text-2xl font-light mb-4 sm:mb-6 text-black">
                   Método de Pago
                 </h2>
-
                 <div className="space-y-3 sm:space-y-4">
                   {/* Pago en Efectivo */}
                   {checkoutContent?.paymentInfo.cashOnDelivery.enabled && (
                     <div
-                      className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${
-                        paymentMethod === "cash" ? "shadow-warm" : "hover:shadow-warm"
-                      }`}
+                      className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${paymentMethod === "cash" ? "shadow-md" : "hover:shadow-md"}`}
                       style={{
-                        borderColor: paymentMethod === "cash" ? "var(--clay)" : "var(--bone)",
-                        backgroundColor: paymentMethod === "cash" ? "var(--bone)" : "var(--pure-white)",
+                        borderColor: paymentMethod === "cash" ? "#000" : "#e5e7eb",
+                        background: paymentMethod === "cash" ? "linear-gradient(90deg, #333 0%, #000 100%)" : "#fff",
                       }}
                       onClick={() => setPaymentMethod("cash")}
                     >
@@ -664,38 +643,33 @@ export default function CheckoutPage() {
                         <div
                           className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0 mt-1 sm:mt-0"
                           style={{
-                            borderColor: paymentMethod === "cash" ? "var(--clay)" : "var(--oak)",
-                            backgroundColor: paymentMethod === "cash" ? "var(--clay)" : "transparent",
+                            borderColor: paymentMethod === "cash" ? "#fff" : "#000",
+                            backgroundColor: paymentMethod === "cash" ? "#fff" : "#fff",
                           }}
                         >
-                          {paymentMethod === "cash" && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-white" />}
+                          {paymentMethod === "cash" && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-black" />}
                         </div>
                         <div className="flex items-start sm:items-center">
-                          <Banknote
-                            className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0"
-                            style={{ color: "var(--clay)" }}
-                          />
+                          <Banknote className={`h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0 ${paymentMethod === "cash" ? "text-white" : "text-black"}`} />
                           <div>
-                            <h3 className="font-medium text-sm sm:text-base" style={{ color: "var(--deep-clay)" }}>
+                            <h3 className="font-medium text-sm sm:text-base" style={{ color: paymentMethod === "cash" ? "#fff" : "#111" }}>
                               {checkoutContent?.paymentInfo.cashOnDelivery.title || "Pago en Efectivo"}
                             </h3>
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
-                              {checkoutContent?.paymentInfo.cashOnDelivery.description ||
-                                "Paga en efectivo al momento de recibir tu pedido"}
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: paymentMethod === "cash" ? "#fff" : "#444" }}>
+                              {checkoutContent?.paymentInfo.cashOnDelivery.description || "Paga en efectivo al momento de recibir tu pedido"}
                             </p>
                             {checkoutContent?.paymentInfo.cashOnDelivery.additionalFee > 0 && (
-                              <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: "var(--clay)" }}>
-                                Cargo adicional: $
-                                {checkoutContent.paymentInfo.cashOnDelivery.additionalFee.toLocaleString()}
+                              <p className="text-xs sm:text-sm mt-1 font-medium" style={{ color: paymentMethod === "cash" ? "#fff" : "#111" }}>
+                                Cargo adicional: ${checkoutContent.paymentInfo.cashOnDelivery.additionalFee.toLocaleString()}
                               </p>
                             )}
                             {checkoutContent?.deliveryInfo.meetingPoint.address && (
-                              <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                              <p className="text-xs sm:text-sm mt-1" style={{ color: paymentMethod === "cash" ? "#fff" : "#444" }}>
                                 <strong>Punto de encuentro:</strong> {checkoutContent.deliveryInfo.meetingPoint.address}
                               </p>
                             )}
                             {checkoutContent?.paymentInfo.cashOnDelivery.notes && (
-                              <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                              <p className="text-xs sm:text-sm mt-1" style={{ color: paymentMethod === "cash" ? "#fff" : "#444" }}>
                                 {checkoutContent.paymentInfo.cashOnDelivery.notes}
                               </p>
                             )}
@@ -704,16 +678,13 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   )}
-
                   {/* Transferencia Bancaria */}
                   {checkoutContent?.paymentInfo.bankTransfer.enabled && (
                     <div
-                      className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${
-                        paymentMethod === "transfer" ? "shadow-warm" : "hover:shadow-warm"
-                      }`}
+                      className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${paymentMethod === "transfer" ? "shadow-md" : "hover:shadow-md"}`}
                       style={{
-                        borderColor: paymentMethod === "transfer" ? "var(--clay)" : "var(--bone)",
-                        backgroundColor: paymentMethod === "transfer" ? "var(--bone)" : "var(--pure-white)",
+                        borderColor: paymentMethod === "transfer" ? "#000" : "#e5e7eb",
+                        background: paymentMethod === "transfer" ? "linear-gradient(90deg, #333 0%, #000 100%)" : "#fff",
                       }}
                       onClick={() => setPaymentMethod("transfer")}
                     >
@@ -721,108 +692,104 @@ export default function CheckoutPage() {
                         <div
                           className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0 mt-1 sm:mt-0"
                           style={{
-                            borderColor: paymentMethod === "transfer" ? "var(--clay)" : "var(--oak)",
-                            backgroundColor: paymentMethod === "transfer" ? "var(--clay)" : "transparent",
+                            borderColor: paymentMethod === "transfer" ? "#fff" : "#000",
+                            backgroundColor: paymentMethod === "transfer" ? "#fff" : "#fff",
                           }}
                         >
-                          {paymentMethod === "transfer" && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-white" />}
+                          {paymentMethod === "transfer" && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-black" />}
                         </div>
                         <div className="flex items-start sm:items-center">
-                          <Building2
-                            className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0"
-                            style={{ color: "var(--clay)" }}
-                          />
+                          <Building2 className={`h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0 mt-1 sm:mt-0 ${paymentMethod === "transfer" ? "text-white" : "text-black"}`} />
                           <div>
-                            <h3 className="font-medium text-sm sm:text-base" style={{ color: "var(--deep-clay)" }}>
+                            <h3 className="font-medium text-sm sm:text-base" style={{ color: paymentMethod === "transfer" ? "#fff" : "#111" }}>
                               {checkoutContent?.paymentInfo.bankTransfer.title || "Transferencia Bancaria"}
                             </h3>
-                            <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
-                              {checkoutContent?.paymentInfo.bankTransfer.instructions ||
-                                "Una vez confirmada la transferencia, el envío puede tardar entre 2 a 3 días hábiles"}
+                            <p className="text-xs sm:text-sm mt-1" style={{ color: paymentMethod === "transfer" ? "#fff" : "#444" }}>
+                              {checkoutContent?.paymentInfo.bankTransfer.instructions || "Una vez confirmada la transferencia, el envío puede tardar entre 2 a 3 días hábiles"}
                             </p>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
-
-                  {/* Información de transferencia - Optimizada para móvil */}
-                  {paymentMethod === "transfer" && checkoutContent?.paymentInfo.bankTransfer && (
-                    <div className="mt-4 sm:mt-6 p-4 sm:p-6 rounded-xl" style={{ backgroundColor: "var(--bone)" }}>
-                      <h4
-                        className="font-medium mb-3 sm:mb-4 text-sm sm:text-base"
-                        style={{ color: "var(--deep-clay)" }}
-                      >
-                        {checkoutContent.paymentInfo.bankTransfer.title || "Datos para la Transferencia"}
-                      </h4>
-                      <div className="space-y-2 text-xs sm:text-sm" style={{ color: "var(--oak)" }}>
-                        <p>
-                          <strong>Banco:</strong> {checkoutContent.paymentInfo.bankTransfer.bankName}
-                        </p>
-                        <p>
-                          <strong>CBU:</strong> {checkoutContent.paymentInfo.bankTransfer.cbu}
-                        </p>
-                        <p>
-                          <strong>Alias:</strong> {checkoutContent.paymentInfo.bankTransfer.alias}
-                        </p>
-                        <p>
-                          <strong>Titular:</strong> {checkoutContent.paymentInfo.bankTransfer.accountHolder}
-                        </p>
-                        {checkoutContent.paymentInfo.bankTransfer.accountType && (
-                          <p>
-                            <strong>Tipo de Cuenta:</strong> {checkoutContent.paymentInfo.bankTransfer.accountType}
-                          </p>
-                        )}
-                        {checkoutContent.paymentInfo.bankTransfer.accountNumber && (
-                          <p>
-                            <strong>Número de Cuenta:</strong> {checkoutContent.paymentInfo.bankTransfer.accountNumber}
-                          </p>
-                        )}
-                      </div>
-
-                      {checkoutContent.paymentInfo.bankTransfer.instructions && (
-                        <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: "var(--soft-creme)" }}>
-                          <p className="text-xs sm:text-sm" style={{ color: "var(--deep-clay)" }}>
-                            <strong>Instrucciones:</strong>
-                          </p>
-                          <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
-                            {checkoutContent.paymentInfo.bankTransfer.instructions}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="mt-4 sm:mt-6">
-                        <label className="block text-xs sm:text-sm font-medium mb-2" style={{ color: "var(--oak)" }}>
-                          Subir Comprobante de Transferencia (Opcional)
-                        </label>
-                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                          <label
-                            className="flex items-center justify-center px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition-colors w-full sm:w-auto"
-                            style={{ borderColor: "var(--clay)" }}
-                          >
-                            <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" style={{ color: "var(--clay)" }} />
-                            <span className="text-xs sm:text-sm truncate" style={{ color: "var(--clay)" }}>
-                              {transferProof ? transferProof.name : "Seleccionar archivo"}
-                            </span>
-                            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                          </label>
-                          {transferProof && (
-                            <button
-                              onClick={() => setTransferProof(null)}
-                              className="text-xs text-red-500 hover:text-red-700 self-start sm:self-center"
-                            >
-                              Eliminar
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-xs mt-2" style={{ color: "var(--oak)" }}>
-                          Formatos aceptados: JPG, PNG, WEBP. Máximo 5MB.
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
+
+              {/* Información de transferencia - Optimizada para móvil */}
+              {paymentMethod === "transfer" && checkoutContent?.paymentInfo.bankTransfer && (
+                <div className="mt-4 sm:mt-6 p-4 sm:p-6 rounded-xl" style={{ backgroundColor: "var(--bone)" }}>
+                  <h4
+                    className="font-medium mb-3 sm:mb-4 text-sm sm:text-base"
+                    style={{ color: "var(--deep-clay)" }}
+                  >
+                    {checkoutContent.paymentInfo.bankTransfer.title || "Datos para la Transferencia"}
+                  </h4>
+                  <div className="space-y-2 text-xs sm:text-sm" style={{ color: "var(--oak)" }}>
+                    <p>
+                      <strong>Banco:</strong> {checkoutContent.paymentInfo.bankTransfer.bankName}
+                    </p>
+                    <p>
+                      <strong>CBU:</strong> {checkoutContent.paymentInfo.bankTransfer.cbu}
+                    </p>
+                    <p>
+                      <strong>Alias:</strong> {checkoutContent.paymentInfo.bankTransfer.alias}
+                    </p>
+                    <p>
+                      <strong>Titular:</strong> {checkoutContent.paymentInfo.bankTransfer.accountHolder}
+                    </p>
+                    {checkoutContent.paymentInfo.bankTransfer.accountType && (
+                      <p>
+                        <strong>Tipo de Cuenta:</strong> {checkoutContent.paymentInfo.bankTransfer.accountType}
+                      </p>
+                    )}
+                    {checkoutContent.paymentInfo.bankTransfer.accountNumber && (
+                      <p>
+                        <strong>Número de Cuenta:</strong> {checkoutContent.paymentInfo.bankTransfer.accountNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  {checkoutContent.paymentInfo.bankTransfer.instructions && (
+                    <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: "var(--soft-creme)" }}>
+                      <p className="text-xs sm:text-sm" style={{ color: "var(--deep-clay)" }}>
+                        <strong>Instrucciones:</strong>
+                      </p>
+                      <p className="text-xs sm:text-sm mt-1" style={{ color: "var(--oak)" }}>
+                        {checkoutContent.paymentInfo.bankTransfer.instructions}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 sm:mt-6">
+                    <label className="block text-xs sm:text-sm font-medium mb-2" style={{ color: "var(--oak)" }}>
+                      Subir Comprobante de Transferencia (Opcional)
+                    </label>
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                      <label
+                        className="flex items-center justify-center px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition-colors w-full sm:w-auto"
+                        style={{ borderColor: "var(--clay)" }}
+                      >
+                        <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" style={{ color: "var(--clay)" }} />
+                        <span className="text-xs sm:text-sm truncate" style={{ color: "var(--clay)" }}>
+                          {transferProof ? transferProof.name : "Seleccionar archivo"}
+                        </span>
+                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                      </label>
+                      {transferProof && (
+                        <button
+                          onClick={() => setTransferProof(null)}
+                          className="text-xs text-red-500 hover:text-red-700 self-start sm:self-center"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs mt-2" style={{ color: "var(--oak)" }}>
+                      Formatos aceptados: JPG, PNG, WEBP. Máximo 5MB.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
