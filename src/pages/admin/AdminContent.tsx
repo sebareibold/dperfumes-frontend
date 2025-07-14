@@ -1101,12 +1101,17 @@ export default function AdminContent() {
   if (error && !content) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center py-10">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-400 text-lg mb-4">{error}</p>
+        <div className="bg-gradient-to-br from-black via-neutral-900 to-neutral-800 bg-opacity-90 rounded-2xl shadow-2xl px-8 py-10 flex flex-col items-center w-full max-w-xs border border-black/30">
+          <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-white/10">
+            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-white text-xl font-semibold mb-2 text-center">Error al cargar contenido</h2>
+          <p className="text-gray-300 mb-6 text-center">{error || "Error desconocido"}</p>
           <button
             onClick={() => loadContent()}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+            className="px-6 py-2 rounded-full bg-gradient-to-r from-black via-gray-800 to-gray-900 text-white font-medium shadow hover:from-gray-900 hover:to-black transition-all"
           >
             Reintentar
           </button>
