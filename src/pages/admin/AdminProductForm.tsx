@@ -31,14 +31,6 @@ const NOTAS_COMUNES = [
   "Floral", "Amaderado", "Cítrico", "Frutal", "Oriental", "Especiado", "Verde", "Acuático", "Dulce", "Polvoroso", "Herbal", "Almizclado", "Gourmand", "Fresco", "Ámbar", "Cuero"
 ]
 
-// Función para formatear número a miles con punto y coma decimal
-function formatPrecioES(value: string | number) {
-  if (value === '' || value === null || value === undefined) return ''
-  const [entero, decimal] = String(value).replace(/\./g, ',').split(',')
-  const enteroFormateado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  return decimal !== undefined ? `${enteroFormateado},${decimal}` : enteroFormateado
-}
-
 // 1. Definir el tipo Envase
 interface Envase {
   _id: string;
@@ -76,10 +68,6 @@ export default function AdminProductForm() {
   const [availableCategories, setAvailableCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [categoriesError, setCategoriesError] = useState<string | null>(null)
-
-  // Validación visual para notas aromáticas
-  const [notasTouched, setNotasTouched] = useState(false)
-  const notasInvalid = notasTouched && form.notasAromaticas.length === 0
 
   // Validación visual para categorías
   const [categoriasTouched, setCategoriasTouched] = useState(false)
@@ -202,7 +190,6 @@ export default function AdminProductForm() {
                 : product.tipo === "vidrio" || product.tipo === "plastico"
                 ? [product.tipo]
                 : [],
-              envases: product.envases && product.envases.length > 0 ? product.envases : undefined,
               estado: product.estado !== undefined ? product.estado : true,
             })
             console.log("AdminProductForm - Estado del formulario actualizado")
@@ -840,7 +827,6 @@ export default function AdminProductForm() {
                           ? prev.notasAromaticas.filter((n) => n !== nota)
                           : [...prev.notasAromaticas, nota],
                       }))
-                      setNotasTouched(true)
                     }}
                   >
                     {nota}

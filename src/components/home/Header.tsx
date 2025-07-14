@@ -12,17 +12,45 @@ export default function Header() {
 
   const navItems = [
     { name: "Inicio", action: () => { setIsMenuOpen(false); navigate("/") } },
-    { name: "Fragancias", action: () => { setIsMenuOpen(false); navigate("/#products") } },
-    { name: "Seguimiento", action: () => { setIsMenuOpen(false); navigate("/order-tracking") } },
-    { name: "Contacto", action: () => { setIsMenuOpen(false); navigate("/#contact") } },
+    { 
+      name: "Catálogo", 
+      action: () => {
+        setIsMenuOpen(false);
+        if (window.location.pathname === "/") {
+          const section = document.getElementById("products");
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+          }
+        } else {
+          sessionStorage.setItem("scrollToSection", "products");
+          navigate("/");
+        }
+      }
+    },
+    { name: "Seguimiento", action: () => { setIsMenuOpen(false); navigate("/track-order") } },
+    { 
+      name: "Contacto", 
+      action: () => {
+        setIsMenuOpen(false);
+        if (window.location.pathname === "/") {
+          const section = document.getElementById("contact");
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+          }
+        } else {
+          sessionStorage.setItem("scrollToSection", "contact");
+          navigate("/");
+        }
+      }
+    },
   ]
 
   return (
     <header className="z-50 transition-all duration-300 bg-transparent shadow-elegant">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto py-4 sm:px-2">
+        <div className="flex items-center justify-between">
           {/* Logo/Brand */}
-          <div className="flex-1 flex items-center justify-start">
+          <div className="flex-1 flex items-center justify-start ml-3 mt-1">
             <Link to="/" className="flex items-center space-x-3 group">
               <img 
                 src="/icono_logo.png" 
@@ -57,7 +85,7 @@ export default function Header() {
           {/* Icons */}
           <div className="flex-1 flex items-center justify-end space-x-6">
             <Link to="/cart" className="relative group">
-              <div className="p-2 rounded-full group-hover:bg-gradient-to-r from-[var(--primary-blue)]/10 to-[var(--secondary-blue)]/10 transition-all duration-300">
+              <div className=" -mr-3 rounded-full group-hover:bg-gradient-to-r from-[var(--primary-blue)]/10 to-[var(--secondary-blue)]/10 transition-all duration-300">
                 <ShoppingBag className="h-6 w-6 text-[var(--primary-dark)] group-hover:text-[var(--primary-blue)] icon-elegant transition-colors duration-300" />
               </div>
               {getTotalItems() > 0 && (
@@ -67,7 +95,7 @@ export default function Header() {
               )}
             </Link>
             {/* Burger menu - Mobile only */}
-            <button className="md:hidden ml-2 p-2 rounded-full hover:bg-gradient-to-r from-[var(--primary-blue)]/10 to-[var(--secondary-blue)]/10 transition-all duration-300" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <button className="md:hidden ml-2 p-2 rounded-full hover:bg-gradient-to-r mr-2 from-[var(--primary-blue)]/10 to-[var(--secondary-blue)]/10 transition-all duration-300" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? (
                 <X className="h-7 w-7 text-[var(--primary-dark)]" />
               ) : (

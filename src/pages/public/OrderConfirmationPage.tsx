@@ -13,27 +13,83 @@ import {
   Building2,
   MessageCircle,
 } from "lucide-react"
+import { apiService } from "../../services/api"
 
 export default function OrderConfirmationPage() {
-  const { orderNumber } = useParams<{ orderNumber: string }>()
+  const { orderNumber: paramOrderNumber } = useParams<{ orderNumber: string }>()
   const location = useLocation()
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const orderData = location.state?.order
-  const paymentMethod = location.state?.paymentMethod
   const wantsShipping = location.state?.wantsShipping
   const transferProof = location.state?.transferProof
 
-  useEffect(() => {
-    if (!orderData) {
-      navigate("/")
+  // Utilidades para acceder a los datos con fallback
+  const numeroOrden = orderData?.numeroOrden || paramOrderNumber;
+  const estado = orderData?.estado;
+  const metodoPago = orderData?.metodoPago;
+  const createdAt = orderData?.createdAt;
+  const items = orderData?.items || [];
+  const subtotal = orderData?.subtotal;
+  const costoEnvio = orderData?.costoEnvio;
+  const total = orderData?.total;
+  const infoEnvio = orderData?.infoEnvio || {};
+
+  // Accesos corregidos para infoEnvio
+  const nombreCompleto = infoEnvio?.nombreCompleto || "N/A";
+  const correo = infoEnvio?.correo || "N/A";
+  const telefono = infoEnvio?.telefono || "N/A";
+  const direccion = infoEnvio?.direccion || "N/A";
+  const ciudad = infoEnvio?.ciudad || "N/A";
+
+  // Función para cargar la orden desde la API si no está en el estado
+  const loadOrderFromAPI = async (orderNumber: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.get(`/orders/by-number/${orderNumber}`);
+      
+      if (response.success && response.order) {
+        // Actualizar el estado con los datos de la orden
+        window.history.replaceState(
+          { 
+            ...location.state, 
+            order: response.order 
+          }, 
+          '', 
+          location.pathname
+        );
+        
+        // Recargar la página para que use los nuevos datos
+        window.location.reload();
+      } else {
+        setError("No se pudo encontrar la orden");
+      }
+    } catch (err) {
+      console.error("Error loading order:", err);
+      setError("Error al cargar la orden. Verifica el número de orden.");
+    } finally {
+      setLoading(false);
     }
-  }, [orderData, navigate])
+  };
+
+  useEffect(() => {
+    // Si no hay datos de la orden pero hay un número de orden en la URL, cargar desde la API
+    if (!orderData && paramOrderNumber) {
+      loadOrderFromAPI(paramOrderNumber);
+    } else if (!orderData && !paramOrderNumber) {
+      // Si no hay datos ni número de orden, redirigir al inicio
+      navigate("/");
+    }
+  }, [orderData, paramOrderNumber, navigate]);
 
   const copyOrderNumber = () => {
-    if (orderNumber) {
-      navigator.clipboard.writeText(orderNumber)
+    if (numeroOrden) {
+      navigator.clipboard.writeText(numeroOrden)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
@@ -57,164 +113,147 @@ export default function OrderConfirmationPage() {
 
   const generateInvoiceHTML = () => {
     const currentDate = new Date().toLocaleDateString("es-AR")
-    const orderDate = new Date(orderData.createdAt || Date.now()).toLocaleDateString("es-AR")
+    const orderDate = new Date(createdAt || Date.now()).toLocaleDateString("es-AR")
 
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>Factura - Orden #${orderNumber}</title>
+        <title>Factura - Orden #${numeroOrden}</title>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
         <style>
-          :root {
-            --soft-creme: #F8F5ED;
-            --light-beige: #D4C7B8; /* Nuevo beige más claro */
-            --medium-beige: #B8A799; /* Nuevo beige medio */
-            --dark-beige: #8C7B6F; /* Nuevo beige más oscuro */
-            --text-color: #5C4033; /* Color de texto general, un marrón suave */
-            --bone: #E0DCD4;
-            --green-success: #4CAF50;
-            --blue-info: #2196F3;
-            --amber-warning: #FFC107;
-          }
-
-          * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
-            font-family: 'Open Sans', sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
+            font-family: 'Open Sans', Arial, sans-serif;
+            color: #111;
+            background: #fff;
             max-width: 800px;
             margin: 0 auto;
-            padding: 30px;
-            background-color: #ffffff; /* Fondo blanco para la factura */
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            font-size: 14px; /* Fuente base más pequeña */
+            padding: 32px;
+            font-size: 14px;
           }
           .header {
             text-align: center;
-            padding-bottom: 20px; /* Reducido */
-            margin-bottom: 30px; /* Reducido */
-            border-bottom: 1px solid var(--bone);
+            margin-bottom: 32px;
+            border-bottom: 2px solid #111;
+            padding-bottom: 18px;
+            letter-spacing: 2px;
           }
           .company-name {
             font-family: 'Playfair Display', serif;
-            font-size: 30px; /* Reducido */
+            font-size: 2.2rem;
             font-weight: 700;
-            color: var(--dark-beige); /* Usando el nuevo color */
-            margin-bottom: 5px; /* Reducido */
+            letter-spacing: 4px;
+            color: #111;
+            margin-bottom: 4px;
+            text-shadow: 2px 2px 0 #fff, 4px 4px 0 #1111;
           }
           .company-info {
-            font-size: 13px; /* Reducido */
-            color: var(--text-color);
+            font-size: 13px;
+            color: #222;
+            letter-spacing: 1px;
           }
           .invoice-title {
             font-family: 'Playfair Display', serif;
-            font-size: 24px; /* Reducido */
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark-beige); /* Usando el nuevo color */
+            color: #111;
             text-align: center;
-            margin: 25px 0; /* Reducido */
+            margin: 36px 0 18px 0;
+            letter-spacing: 2px;
+            border-bottom: 2px dashed #111;
+            padding-bottom: 12px;
             text-transform: uppercase;
           }
           .section-title {
             font-family: 'Playfair Display', serif;
-            font-size: 18px; /* Reducido */
+            font-size: 1.1rem;
             font-weight: 700;
-            color: var(--dark-beige); /* Usando el nuevo color */
-            margin-bottom: 10px; /* Reducido */
-            border-bottom: 1px solid var(--bone);
-            padding-bottom: 5px;
-          }
-          .invoice-details, .customer-info, .payment-info, .order-notes {
-            background: var(--soft-creme);
-            padding: 18px; /* Reducido */
-            border-radius: 8px;
-            margin-bottom: 20px; /* Reducido */
-            border: 1px solid var(--bone);
+            color: #111;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #111;
+            padding-bottom: 4px;
+            letter-spacing: 1px;
           }
           .invoice-details {
             display: flex;
             justify-content: space-between;
-            font-size: 14px; /* Reducido */
+            font-size: 14px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #111;
+            padding-bottom: 10px;
           }
-          .invoice-details strong {
-            color: var(--medium-beige); /* Usando el nuevo color */
+          .client-shipping {
+            display: flex;
+            gap: 48px;
+            margin-bottom: 18px;
+          }
+          .client-data, .shipping-data {
+            flex: 1;
+          }
+          .client-data p, .shipping-data p {
+            margin: 2px 0 0 0;
+            font-size: 14px;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px; /* Reducido */
+            margin-bottom: 18px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px 0 #1112;
           }
           .items-table th, .items-table td {
-            border: 1px solid var(--bone);
-            padding: 10px; /* Reducido */
+            border: 1px solid #111;
+            padding: 12px 14px;
             text-align: left;
-            font-size: 14px; /* Reducido */
+            font-size: 14px;
           }
           .items-table th {
-            background: var(--medium-beige); /* Usando el nuevo color */
-            color: white;
-            font-weight: 600;
+            background: #f7f7f7;
+            color: #111;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            border-bottom: 2px solid #111;
           }
-          .items-table tr:nth-child(even) {
-            background: #fcfafa;
+          .items-table td {
+            font-family: 'Open Sans', Arial, sans-serif;
+            border-bottom: 1px dashed #111;
           }
           .totals {
             text-align: right;
-            margin-top: 25px; /* Reducido */
+            margin-top: 18px;
           }
           .totals table {
             margin-left: auto;
             border-collapse: collapse;
-            width: 50%;
+            width: 60%;
           }
           .totals td {
-            padding: 6px 15px; /* Reducido */
-            border-bottom: 1px solid var(--bone);
-            font-size: 15px; /* Reducido */
+            padding: 10px 14px;
+            border-bottom: 1px solid #111;
+            font-size: 15px;
           }
           .total-final {
             font-weight: 700;
-            font-size: 18px; /* Reducido */
-            color: var(--dark-beige); /* Usando el nuevo color */
-            border-top: 2px solid var(--medium-beige) !important; /* Usando el nuevo color */
-            padding-top: 8px !important; /* Reducido */
+            font-size: 1.1rem;
+            color: #111;
+            border-top: 2px solid #111 !important;
+            padding-top: 8px !important;
+            letter-spacing: 1px;
           }
           .footer {
-            margin-top: 40px; /* Reducido */
+            margin-top: 32px;
             text-align: center;
-            font-size: 12px; /* Reducido */
-            color: var(--text-color);
-            border-top: 1px solid var(--bone);
-            padding-top: 20px; /* Reducido */
+            font-size: 12px;
+            color: #222;
+            border-top: 1px solid #111;
+            padding-top: 16px;
+            letter-spacing: 1px;
           }
-          .info-box {
-            padding: 10px; /* Reducido */
-            border-radius: 6px;
-            margin-top: 8px; /* Reducido */
-            font-size: 12px; /* Reducido */
-            line-height: 1.5;
-          }
-          .info-box.blue {
-            background-color: rgba(33, 150, 243, 0.1);
-            border-left: 4px solid var(--blue-info);
-            color: #0D47A1;
-          }
-          .info-box.green {
-            background-color: rgba(76, 175, 80, 0.1);
-            border-left: 4px solid var(--green-success);
-            color: #1B5E20;
-          }
-          .info-box.amber {
-            background-color: rgba(255, 193, 7, 0.1);
-            border-left: 4px solid var(--amber-warning);
-            color: #FF6F00;
-          }
-          .text-bold { font-weight: 600; color: var(--medium-beige); } /* Usando el nuevo color */
-          .text-muted { color: var(--text-color); }
-
           @media print {
             body {
               margin: 0;
@@ -238,49 +277,39 @@ export default function OrderConfirmationPage() {
         </div>
 
         <div class="invoice-title">Factura de Venta</div>
+        <!-- Línea separadora eliminada para un look más limpio -->
 
         <div class="invoice-details">
           <div>
-            <span class="text-bold">Número de Orden:</span> #${orderNumber}<br>
-            <span class="text-bold">Fecha de Emisión:</span> ${currentDate}<br>
-            <span class="text-bold">Fecha de Pedido:</span> ${orderDate}
+            <strong>Número de Orden:</strong> #${numeroOrden}<br>
+            <strong>Fecha de Emisión:</strong> ${currentDate}<br>
+            <strong>Fecha de Pedido:</strong> ${orderDate}
           </div>
           <div style="text-align: right;">
-            <span class="text-bold">Estado:</span> ${orderData.status === "paid" ? "PAGADO" : "PENDIENTE"}<br>
-            <span class="text-bold">Método de Pago:</span> ${paymentMethod === "cash" ? "Efectivo" : "Transferencia"}
+            <strong>Estado:</strong> ${estado === "pagado" ? "PAGADO" : "PENDIENTE"}<br>
+            <strong>Método de Pago:</strong> ${metodoPago === "efectivo" ? "Efectivo" : "Transferencia"}
           </div>
         </div>
 
-        <div class="customer-info">
-          <div class="section-title">Datos del Cliente</div>
-          <p><span class="text-bold">Nombre:</span> ${orderData.shippingInfo?.fullName || "N/A"}</p>
-          <p><span class="text-bold">Email:</span> ${orderData.shippingInfo?.email || "N/A"}</p>
-          <p><span class="text-bold">Teléfono:</span> ${orderData.shippingInfo?.phone || "N/A"}</p>
-          <p><span class="text-bold">Dirección:</span> ${orderData.shippingInfo?.address || "N/A"}</p>
-          <p><span class="text-bold">Ciudad:</span> ${orderData.shippingInfo?.city || "N/A"}</p>
-        </div>
-
-        ${
-          paymentMethod === "transfer"
-            ? `
-        <div class="payment-info">
-          <div class="section-title">Información de Transferencia</div>
-          <div class="info-box blue">
-            <p><span class="text-bold">CBU:</span> 0110599520000012345678</p>
-            <p><span class="text-bold">Alias:</span> DAISY.PERFUMES</p>
-            <p><span class="text-bold">Titular:</span> Daisy Perfumes S.A.S.</p>
-            <p><span class="text-bold">Monto a transferir:</span> $${orderData.total?.toLocaleString("es-AR")}</p>
+        <div class="section-title">Datos del Cliente y Envío</div>
+        <div class="client-shipping">
+          <div class="client-data">
+            <p><strong>Nombre:</strong> ${nombreCompleto}</p>
+            <p><strong>Email:</strong> ${correo}</p>
+            <p><strong>Teléfono:</strong> ${telefono}</p>
+          </div>
+          <div class="shipping-data">
+            <p><strong>Dirección:</strong> ${direccion}</p>
+            <p><strong>Ciudad:</strong> ${ciudad}</p>
           </div>
         </div>
-        `
-            : ""
-        }
 
         <table class="items-table">
           <thead>
             <tr>
               <th>Producto</th>
-              <th>Talla/Color</th>
+              <th>Volumen</th>
+              <th>Tipo</th>
               <th>Cantidad</th>
               <th>Precio Unit.</th>
               <th>Subtotal</th>
@@ -288,15 +317,22 @@ export default function OrderConfirmationPage() {
           </thead>
           <tbody>
             ${
-              orderData.items
+              items
                 ?.map(
-                  (item: any) => `
+                  (item: {
+                    nombre: string;
+                    volumen: { ml: string; precio: number };
+                    tipo: string;
+                    cantidad: number;
+                    imagen?: string;
+                  }) => `
               <tr>
-                <td>${item.title}</td>
-                <td>${item.size || ""} ${item.color ? `/ ${item.color}` : ""}</td>
-                <td>${item.quantity}</td>
-                <td>$${item.price?.toLocaleString("es-AR")}</td>
-                <td>$${(item.price * item.quantity)?.toLocaleString("es-AR")}</td>
+                <td>${item.nombre}</td>
+                <td>${item.volumen?.ml || ""}</td>
+                <td>${item.tipo || ""}</td>
+                <td>${item.cantidad}</td>
+                <td>$${item.volumen?.precio?.toLocaleString("es-AR")}</td>
+                <td>$${(item.volumen?.precio * item.cantidad)?.toLocaleString("es-AR")}</td>
               </tr>
             `,
                 )
@@ -309,39 +345,25 @@ export default function OrderConfirmationPage() {
           <table>
             <tr>
               <td>Subtotal:</td>
-              <td>$${orderData.subtotal?.toLocaleString("es-AR")}</td>
+              <td>$${subtotal?.toLocaleString("es-AR")}</td>
             </tr>
             <tr>
               <td>${wantsShipping ? "Envío:" : "Punto de encuentro:"}</td>
-              <td>${wantsShipping ? `$${orderData.shippingCost?.toLocaleString("es-AR")}` : "Gratis"}</td>
+              <td>${wantsShipping ? `$${costoEnvio?.toLocaleString("es-AR")}` : "Gratis"}</td>
             </tr>
             <tr class="total-final">
               <td><strong>TOTAL:</strong></td>
-              <td><strong>$${orderData.total?.toLocaleString("es-AR")}</strong></td>
+              <td><strong>$${total?.toLocaleString("es-AR")}</strong></td>
             </tr>
           </table>
         </div>
 
-        ${
-          orderData.notes
-            ? `
-        <div class="order-notes">
-          <div class="section-title">Notas Adicionales</div>
-          <p>${orderData.notes}</p>
-        </div>
-        `
-            : ""
-        }
+        <!-- Línea separadora eliminada para un look más limpio -->
 
         <div class="footer">
-          <p><span class="text-bold">¡Gracias por tu compra!</span></p>
+          <p><strong>¡Gracias por tu compra!</strong></p>
           <p>Esta factura fue generada automáticamente el ${currentDate}</p>
           <p>Para consultas sobre tu pedido, contactanos por WhatsApp: +54 299 512 3456</p>
-          ${
-            paymentMethod === "cash"
-              ? '<p class="info-box amber"><strong>IMPORTANTE:</strong> El pago se realizará en efectivo en el punto de encuentro.</p>'
-              : '<p class="info-box amber"><strong>IMPORTANTE:</strong> Envía el comprobante de transferencia para confirmar tu pago.</p>'
-          }
         </div>
       </body>
       </html>
@@ -349,9 +371,40 @@ export default function OrderConfirmationPage() {
   }
 
   const handleWhatsAppContact = () => {
-    const message = `Hola! Acabo de realizar la orden #${orderNumber}. Me gustaría confirmar los detalles y coordinar ${wantsShipping ? "el envío" : "el punto de encuentro"}.`
+    const message = `Hola! Acabo de realizar la orden #${numeroOrden}. Me gustaría confirmar los detalles y coordinar ${wantsShipping ? "el envío" : "el punto de encuentro"}.`
     const whatsappUrl = `https://wa.me/5492995123456?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, "_blank")
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--soft-creme)" }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="text-black font-light">Cargando información de la orden...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--soft-creme)" }}>
+        <div className="text-center max-w-md mx-auto px-6">
+          <h2 className="font-serif text-2xl font-light mb-4 text-black">
+            Error al cargar la orden
+          </h2>
+          <p className="text-black font-light mb-6">{error}</p>
+          <button
+            onClick={() => navigate("/")}
+            className="inline-block px-6 py-3 text-white font-medium text-sm uppercase tracking-wider rounded-xl shadow-warm-lg transition-all hover:scale-105"
+            style={{ backgroundColor: "var(--clay)" }}
+          >
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (!orderData) {
@@ -395,7 +448,7 @@ export default function OrderConfirmationPage() {
                 </h2>
                 <div className="flex items-center space-x-4">
                   <span className="text-3xl font-mono font-bold" style={{ color: "var(--clay)" }}>
-                    #{orderNumber}
+                    #{numeroOrden}
                   </span>
                   <button
                     onClick={copyOrderNumber}
@@ -412,7 +465,7 @@ export default function OrderConfirmationPage() {
                   Fecha del pedido
                 </p>
                 <p className="text-lg" style={{ color: "var(--clay)" }}>
-                  {new Date().toLocaleDateString("es-AR")}
+                  {new Date(createdAt || Date.now()).toLocaleDateString("es-AR")}
                 </p>
               </div>
             </div>
@@ -428,9 +481,9 @@ export default function OrderConfirmationPage() {
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="font-medium mb-2" style={{ color: "var(--clay)" }}>
-                    {paymentMethod === "cash" ? "Pago en Efectivo" : "Transferencia Bancaria"}
+                    {metodoPago === "efectivo" ? "Pago en Efectivo" : "Transferencia Bancaria"}
                   </p>
-                  {paymentMethod === "cash" ? (
+                  {metodoPago === "efectivo" ? (
                     <div className="space-y-2 text-sm" style={{ color: "var(--oak)" }}>
                       <div className="flex items-start">
                         <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
@@ -491,21 +544,21 @@ export default function OrderConfirmationPage() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="space-y-2 text-sm" style={{ color: "var(--oak)" }}>
                     <p>
-                      <strong>Nombre:</strong> {orderData.shippingInfo?.fullName}
+                      <strong>Nombre:</strong> {nombreCompleto}
                     </p>
                     <p>
-                      <strong>Teléfono:</strong> {orderData.shippingInfo?.phone}
+                      <strong>Teléfono:</strong> {telefono}
                     </p>
                     <p>
-                      <strong>Email:</strong> {orderData.shippingInfo?.email}
+                      <strong>Email:</strong> {correo}
                     </p>
                     {wantsShipping ? (
                       <>
                         <p>
-                          <strong>Dirección:</strong> {orderData.shippingInfo?.address}
+                          <strong>Dirección:</strong> {direccion}
                         </p>
                         <p>
-                          <strong>Ciudad:</strong> {orderData.shippingInfo?.city}
+                          <strong>Ciudad:</strong> {ciudad}
                         </p>
                         <p className="text-xs bg-blue-50 p-2 rounded border-l-4 border-blue-400 mt-2">
                           Los envíos tienen un costo adicional según tu ubicación y solo se realizan dentro de Neuquén.
@@ -527,14 +580,19 @@ export default function OrderConfirmationPage() {
                 Productos Ordenados
               </h3>
               <div className="space-y-4">
-                {orderData.items?.map((item: any, index: number) => (
-                  <div key={index} className="flex items-center bg-gray-50 rounded-lg p-4">
+                {items?.map((item: {
+                  nombre: string;
+                  volumen: { ml: string; precio: number };
+                  tipo: string;
+                  cantidad: number;
+                  imagen?: string;
+                }, index: number) => (
+                  <div key={index} className="flex items-center bg-gray-50 rounded-lg p-4 border border-black/10 shadow-sm">
                     <div className="flex-shrink-0 w-16 h-16 mr-4">
                       <img
-                        src={item.image || "/placeholder.svg?height=64&width=64"}
-                        alt={item.title}
-                        className="w-full h-full object-cover rounded-lg border"
-                        style={{ borderColor: "var(--bone)" }}
+                        src={item.imagen || "/placeholder.svg?height=64&width=64"}
+                        alt={item.nombre}
+                        className="w-full h-full object-cover rounded-lg border border-black/20"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
                           target.src = "/placeholder.svg?height=64&width=64"
@@ -543,20 +601,20 @@ export default function OrderConfirmationPage() {
                     </div>
                     <div className="flex-1">
                       <h4 className="font-medium mb-1" style={{ color: "var(--clay)" }}>
-                        {item.title}
+                        {item.nombre}
                       </h4>
                       <div className="text-sm space-y-1" style={{ color: "var(--oak)" }}>
-                        {item.size && <p>Talla: {item.size}</p>}
-                        {item.color && <p>Color: {item.color}</p>}
-                        <p>Cantidad: {item.quantity}</p>
+                        <p>Volumen: {item.volumen.ml} ml</p>
+                        <p>Tipo: {item.tipo}</p>
+                        <p>Cantidad: {item.cantidad}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-medium" style={{ color: "var(--clay)" }}>
-                        ${(item.price * item.quantity).toLocaleString()}
+                        ${(item.volumen?.precio * item.cantidad).toLocaleString()}
                       </p>
                       <p className="text-sm" style={{ color: "var(--oak)" }}>
-                        ${item.price.toLocaleString()} c/u
+                        ${item.volumen?.precio.toLocaleString()} c/u
                       </p>
                     </div>
                   </div>
@@ -570,18 +628,18 @@ export default function OrderConfirmationPage() {
                 <div className="w-full max-w-sm space-y-2">
                   <div className="flex justify-between text-sm" style={{ color: "var(--oak)" }}>
                     <span>Subtotal:</span>
-                    <span>${orderData.subtotal?.toLocaleString()}</span>
+                    <span>${subtotal?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm" style={{ color: "var(--oak)" }}>
                     <span>{wantsShipping ? "Envío:" : "Punto de encuentro:"}</span>
-                    <span>{wantsShipping ? `$${orderData.shippingCost?.toLocaleString()}` : "Gratis"}</span>
+                    <span>{wantsShipping ? `$${costoEnvio?.toLocaleString()}` : "Gratis"}</span>
                   </div>
                   <div
                     className="flex justify-between text-xl font-semibold pt-2 border-t"
                     style={{ color: "var(--deep-clay)", borderColor: "var(--bone)" }}
                   >
                     <span>Total:</span>
-                    <span>${orderData.total?.toLocaleString()}</span>
+                    <span>${total?.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -593,23 +651,26 @@ export default function OrderConfirmationPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
           <button
             onClick={handlePrintInvoice}
-            className="flex items-center justify-center px-6 py-3 border-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg"
+            className="flex items-center justify-center px-6 py-3 border-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 group bg-white hover:bg-[linear-gradient(90deg,#333_0%,#000_100%)] group hover:text-white"
             style={{
               borderColor: "var(--clay)",
-              color: "var(--clay)",
-              backgroundColor: "white",
+              color: "var(--clay)"
             }}
           >
-            <Printer className="h-5 w-5 mr-2" />
+            <span className="transition-colors duration-300 flex items-center group-hover:text-white">
+            <Printer className="h-5 w-5 mr-2 group-hover:text-white transition-colors duration-300" />
             Imprimir Factura
+            </span>
           </button>
 
           <button
             onClick={handleWhatsAppContact}
-            className="flex items-center justify-center px-6 py-3 rounded-xl font-medium text-white transition-all duration-300 hover:shadow-lg"
-            style={{ backgroundColor: "var(--clay)" }}
+            className="flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 border border-green-800 text-green-800 bg-white hover:bg-green-800 hover:text-white hover:shadow-lg hover:scale-105 group"
+            style={{
+              boxShadow: "0 2px 8px 0 rgba(20,83,45,0.08)"
+            }}
           >
-            <MessageCircle className="h-5 w-5 mr-2" />
+            <MessageCircle className="h-5 w-5 mr-2 group-hover:text-white text-green-800 transition-colors duration-300" />
             Contactar por WhatsApp
           </button>
         </div>
@@ -618,10 +679,10 @@ export default function OrderConfirmationPage() {
         <div className="text-center">
           <button
             onClick={() => navigate("/")}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white transition-all duration-300 hover:shadow-lg"
-            style={{ backgroundColor: "var(--deep-clay)" }}
+            className="inline-flex items-center px-6 py-3 border border-[#374151] text-base font-medium rounded-xl text-[#374151] bg-white transition-all duration-300 hover:shadow-lg hover:bg-[#374151] hover:text-white hover:scale-105 group"
+            style={{ boxShadow: "0 2px 8px 0 rgba(55,65,81,0.08)" }}
           >
-            <ArrowLeft className="h-5 w-5 mr-2" />
+            <ArrowLeft className="h-5 w-5 mr-2 group-hover:text-white text-[#374151] transition-colors duration-300" />
             Volver al Inicio
           </button>
         </div>

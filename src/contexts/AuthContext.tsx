@@ -28,6 +28,15 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
+interface ApiUser {
+  id?: string;
+  _id?: string;
+  email?: string;
+  role?: string;
+  name?: string;
+  firstName?: string;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Hook personalizado para usar el contexto
@@ -76,22 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         const response = await apiService.login({ email, password });
-        if (response && response.success && response.token) {
-          // Guardar token y datos del usuario
-          localStorage.setItem("adminToken", response.token);
-
+        if (response && response.success && response.token && response.user && typeof response.user === 'object') {
+          const apiUser = response.user as ApiUser;
           const userData = {
-            id: response.user.id || response.user._id,
-            email: response.user.email,
-            role: response.user.role,
-            name: response.user.name || response.user.firstName || "Admin",
+            id: apiUser.id || apiUser._id || '',
+            email: apiUser.email || '',
+            role: apiUser.role || '',
+            name: apiUser.name || apiUser.firstName || 'Admin',
           };
-
           localStorage.setItem("adminUser", JSON.stringify(userData));
-
           setUser(userData);
-          setToken(response.token);
-
+          setToken(typeof response.token === "string" ? response.token : null);
           console.log("AuthContext - Login exitoso:", userData);
           return true;
         } else {

@@ -238,21 +238,20 @@ export default function ProductDetail() {
       alert("Por favor selecciona una presentación");
       return;
     }
-    addToCart(
-      {
-        id: product._id,
-        name: product.nombre,
-        price: selectedEnvase.precio,
-        image: product.imagenes[selectedImage],
-        size: selectedEnvase.volumen.toString(),
-        color: selectedEnvase.tipo === "vidrio" ? "Vidrio" : "Plástico",
+    const itemToAdd = {
+      id: product._id,
+      nombre: product.nombre,
+      volumen: {
+        ml: selectedEnvase.volumen.toString(),
+        precio: selectedEnvase.precio
       },
-      quantity
-    );
+      tipo: selectedEnvase.tipo,
+      imagen: product.imagenes[selectedImage],
+    };
+    console.log("[DEBUG] Item que se agrega al carrito:", itemToAdd);
+    addToCart(itemToAdd, quantity);
     alert(
-      `${product.nombre} (${
-        selectedEnvase.tipo === "vidrio" ? "Vidrio" : "Plástico"
-      }, ${selectedEnvase.volumen}) agregado al carrito`
+      `${product.nombre} (${selectedEnvase.tipo}, ${selectedEnvase.volumen}ml) agregado al carrito`
     );
   };
 
@@ -340,7 +339,7 @@ export default function ProductDetail() {
       <style>{productDetailStyles}</style>
 
       {/* Fondo decorativo SVG con ondas en esquinas, ahora inclinadas */}
-      {/* Esquina inferior izquierda, inclinada hacia arriba */}
+      {/* Esquina inferior izquierda, inclinada hacia arriba 
       <svg
         className="absolute left-0 top-0 w-[60vw] h-[50vh] z-0 pointer-events-none select-none"
         style={{ transform: 'rotate(-30deg)', transformOrigin: 'bottom left' }}
@@ -355,10 +354,10 @@ export default function ProductDetail() {
           <path d="M0 200 Q 140 160 280 200 T 560 200 T 600 200" fill="none" />
           <path d="M0 170 Q 80 110 160 170 T 320 170 T 480 170 T 600 170" fill="none" />
         </g>
-      </svg>
+      </svg>*/}
       {/* Esquina superior derecha, inclinada hacia abajo */}
       <svg
-        className="absolute left-300 top-90 w-[60vw] h-[90vh] z-0 pointer-events-none select-none"
+        className="absolute left-300 top-100 w-[60vw] h-[90vh] z-0 pointer-events-none select-none"
         style={{ transform: 'rotate(-30deg)', transformOrigin: 'bottom left' }}
         viewBox="0 0 600 200"
         fill="none"

@@ -78,11 +78,11 @@ export default function CartPage() {
     let message = "Hola! Me gustaría consultar sobre estos perfumes:\n\n";
 
     items.forEach((item, index) => {
-      message += `${index + 1}. ${item.name}\n`;
-      if (item.size) message += `   Volumen: ${item.size}\n`;
-      if (item.color) message += `   Variante: ${item.color}\n`;
-      message += `   Cantidad: ${item.quantity}\n`;
-      message += `   Precio: $${item.price.toLocaleString()}\n\n`;
+      message += `${index + 1}. ${item.nombre}\n`;
+      message += `   Volumen: ${item.volumen.ml}ml\n`;
+      message += `   Tipo: ${item.tipo}\n`;
+      message += `   Cantidad: ${item.cantidad}\n`;
+      message += `   Precio: $${item.volumen.precio.toLocaleString()}\n\n`;
     });
 
     message += `Total estimado: $${getTotalPrice().toLocaleString()}\n\n`;
@@ -151,17 +151,17 @@ export default function CartPage() {
                 <ul className="divide-y divide-black/10">
                   {items.map((item) => (
                     <li
-                      key={`${item.id}-${item.size}-${item.color || ""}`}
+                      key={`${item.id}-${item.volumen.ml}-${item.volumen.precio}-${item.tipo}`}
                       className="p-6 transition-all hover:bg-gray-50 hover:shadow-sm"
                     >
                       <div className="flex items-center">
                         <div className="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden rounded-xl border border-black/10 shadow-sm bg-white">
                           <img
                             src={
-                              item.image ||
+                              item.imagen ||
                               "/placeholder.svg?height=96&width=96"
                             }
-                            alt={item.name}
+                            alt={item.nombre}
                             className="h-full w-full object-cover object-center"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -175,25 +175,21 @@ export default function CartPage() {
                           <div className="flex justify-between">
                             <div className="flex-1">
                               <h3 className="font-serif text-lg font-medium text-black">
-                                {item.name}
+                                {item.nombre}
                               </h3>
                               <div className="mt-1 flex items-center space-x-4 text-sm">
-                                {item.size && (
-                                  <span className="flex items-center text-gray-700">
-                                    <Droplet className="h-4 w-4 mr-1" />
-                                    {item.size}
-                                  </span>
-                                )}
-                                {item.color && item.color !== "Único" && (
-                                  <span className="text-gray-700">
-                                    {item.color}
-                                  </span>
-                                )}
+                                <span className="flex items-center text-gray-700">
+                                  <Droplet className="h-4 w-4 mr-1" />
+                                  {item.volumen.ml}ml
+                                </span>
+                                <span className="text-gray-700">
+                                  {item.tipo}
+                                </span>
                               </div>
                             </div>
                             <div className="text-right">
                               <p className="font-semibold text-lg text-black">
-                                ${item.price.toLocaleString()}
+                                ${item.volumen.precio.toLocaleString()}
                               </p>
                             </div>
                           </div>
@@ -204,9 +200,9 @@ export default function CartPage() {
                                 onClick={() =>
                                   updateQuantity(
                                     item.id,
-                                    Math.max(1, item.quantity - 1),
-                                    item.size,
-                                    item.color
+                                    Math.max(1, item.cantidad - 1),
+                                    item.volumen,
+                                    item.tipo
                                   )
                                 }
                                 className="p-2 rounded-lg bg-white border border-black/10 hover:bg-black hover:text-white transition-all shadow-sm text-black"
@@ -214,15 +210,15 @@ export default function CartPage() {
                                 <Minus className="h-4 w-4" />
                               </button>
                               <span className="text-lg font-medium min-w-[2rem] text-center text-black">
-                                {item.quantity}
+                                {item.cantidad}
                               </span>
                               <button
                                 onClick={() =>
                                   updateQuantity(
                                     item.id,
-                                    item.quantity + 1,
-                                    item.size,
-                                    item.color
+                                    item.cantidad + 1,
+                                    item.volumen,
+                                    item.tipo
                                   )
                                 }
                                 className="p-2 rounded-lg bg-white border border-black/10 hover:bg-black hover:text-white transition-all shadow-sm text-black"
@@ -232,7 +228,7 @@ export default function CartPage() {
                             </div>
                             <button
                               onClick={() =>
-                                removeFromCart(item.id, item.size, item.color)
+                                removeFromCart(item.id, item.volumen, item.tipo)
                               }
                               className="p-2 rounded-lg bg-white border border-black/10 hover:bg-red-600 hover:text-white transition-all shadow-sm text-black"
                             >
@@ -283,7 +279,7 @@ export default function CartPage() {
                     className="w-full py-4 px-6 rounded-xl border-2 border-black text-black bg-white font-semibold text-base uppercase tracking-wider shadow-lg transition-all duration-300 hover:bg-black hover:scale-103 hover:text-white hover:shadow-xl flex items-center justify-center group"
                   >
                     <CreditCard className="h-6 w-6 mr-2 group-hover:text-white text-black transition-colors duration-300" />
-                    Finalizar Compra
+                    Realizar pedido
                   </button>
                   <button
                     onClick={handleWhatsAppConsult}

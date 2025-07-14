@@ -80,7 +80,7 @@ export default function CategoryPage() {
       setProducts((prevProducts) =>
         pageToLoad === 1 ? transformedProducts : [...prevProducts, ...transformedProducts],
       )
-      setTotalPages(response.totalPages)
+      setTotalPages(Number(response.totalPages));
       setCurrentPage(pageToLoad)
       setError(null)
     } catch (err) {

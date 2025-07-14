@@ -1,7 +1,7 @@
 // Este archivo se comporta como un manager de la API, de tal manera que únicamente los subsistemas del front se comunican con él.
 import axios from "axios"
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://dperfumes-backend-production.up.railway.app/api"
 
 // Cache para las respuestas de la API
 const apiCache = new Map<string, { data: unknown; timestamp: number }>()
@@ -325,7 +325,7 @@ export const apiService = {
 
   createProduct: async (productData: PerfumeCreateData) => {
     try {
-      const response = await apiService.post("/products", productData) as Perfume
+      const response = await apiService.post("/products", { ...productData }) as Perfume;
       return { success: true, product: response }
     } catch (error: unknown) {
       return {

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface AboutSectionProps {
   imageUrl: string;
   imageAlt?: string;

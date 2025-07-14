@@ -51,7 +51,7 @@ export default function ProductCatalog({ content }: ProductCatalogProps) {
       setLoading(true)
       setError(null)
       try {
-        const response = await apiService.getProducts({})
+        const response = await apiService.getProducts();
         const prods = response.payload || []
         setProducts(prods)
         // Extraer categorías y notas únicas
@@ -80,10 +80,16 @@ export default function ProductCatalog({ content }: ProductCatalogProps) {
 
   return (
     <section className="py-10 lg:py-20 bg-white relative overflow-hidden" id="products">
-      {/* Separador curvo superior */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden leading-none" style={{height: '80px'}}>
-        <svg viewBox="0 0 1920 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <path d="M0 80 Q 960 0 1920 80 V0 H0V80Z" fill="#F2F4F7" />
+      {/* Separador curvo superior - MOBILE */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden leading-none block sm:hidden -mt-8" style={{height: '80px'}}>
+        <svg viewBox="0 0 600 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full ">
+          <path d="M0 80 Q 300 0 600 80 V0 H0V80Z" fill="#F2F4F7" />
+        </svg>
+      </div>
+      {/* Separador curvo superior - DESKTOP */}
+      <div className="absolute -top-10 left-0 w-full overflow-hidden leading-none hidden sm:block" style={{height: '140px'}}>
+      <svg viewBox="0 0 1920 140" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M0 140 Q 960 0 1920 140 V0 H0V140Z" fill="#F2F4F7" />
         </svg>
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-25">
@@ -134,7 +140,7 @@ export default function ProductCatalog({ content }: ProductCatalogProps) {
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 sm: px-1">
               {products.map((product, index) => {
                 // Obtener el precio más bajo entre todos los volúmenes
                 const allVolumes = Array.isArray(product.volumen) ? product.volumen : []
@@ -222,10 +228,16 @@ export default function ProductCatalog({ content }: ProductCatalogProps) {
           </>
         )}
       </div>
-      {/* Separador curvo inferior */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none" style={{height: '80px'}}>
-        <svg viewBox="0 0 1920 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full rotate-180">
-          <path d="M0 80 Q 960 0 1920 80 V0 H0V80Z" fill="#F2F4F7" />
+      {/* Separador curvo inferior - MOBILE */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none block sm:hidden -mb-8" style={{height: '80px'}}>
+        <svg viewBox="0 0 600 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M0 0 Q 300 80 600 0 V80 H0V0Z" fill="#F2F4F7" />
+        </svg>
+      </div>
+      {/* Separador curvo inferior - DESKTOP */}
+      <div className="absolute -bottom-4 left-0 w-full overflow-hidden leading-none hidden sm:block" style={{height: '140px'}}>
+        <svg viewBox="0 0 1920 140" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M0 0 Q 960 140 1920 0 V140 H0V0Z" fill="#F2F4F7" />
         </svg>
       </div>
     </section>

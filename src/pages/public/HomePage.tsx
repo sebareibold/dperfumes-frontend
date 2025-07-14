@@ -3,7 +3,6 @@
 import HeroSection from "../../components/home/HeroSection"
 import ProductCatalog from "../../components/home/ProductCatalog"
 import ContactSection from "../../components/home/ContactSection"
-import type React from "react"
 import { useState, useEffect } from "react"
 import { apiService } from "../../services/api"
 
@@ -91,6 +90,19 @@ export default function HomePage() {
     }
     loadSiteContent()
   }, [])
+
+  useEffect(() => {
+    const sectionId = sessionStorage.getItem("scrollToSection");
+    if (sectionId) {
+      sessionStorage.removeItem("scrollToSection");
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, []);
 
   if (loadingContent) {
     return (

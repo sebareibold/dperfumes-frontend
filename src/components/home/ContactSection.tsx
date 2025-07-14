@@ -120,11 +120,11 @@ export default function ContactSection({ content }: ContactSectionProps) {
   }
 
   return (
-    <section className="py-40 lg:py-32flex justify-center items-center ">
-      <div className="max-w-5xl w-full mx-auto bg-white rounded-2xl border border-black/10 shadow-none flex flex-col md:flex-row items-center justify-center min-h-[420px]">
+    <section id="contact" className="py-40 lg:py-32 flex justify-center items-center">
+      <div className="max-w-5xl w-full bg-white rounded-2xl border border-black/10 shadow-none flex flex-col md:flex-row items-center justify-center min-h-[420px] gap-6 px-4 md:px-0 mx-4 sm:mx-8 md:mx-auto">
         {/* Tarjeta de información de contacto */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 h-full">
-          <div className="bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900 border border-black/10 rounded-2xl p-10 flex flex-col justify-between items-start w-[90%] h-[95%] min-h-[650px] max-w-[550px] mx-auto my-8 relative">
+          <div className="bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900 border border-black/10 rounded-2xl p-6 md:p-10 flex flex-col justify-between items-start w-full md:w-[90%] min-h-0 md:min-h-[650px] max-w-full md:max-w-[550px] mx-auto my-4 md:my-8 relative">
             <div className="relative z-10 w-full">
               <h3 className="font-serif text-2xl font-semibold text-white mb-4 uppercase tracking-widest">Información de Contacto</h3>
               <p className="text-white/80 text-sm mb-8">{content.description}</p>
@@ -174,7 +174,7 @@ export default function ContactSection({ content }: ContactSectionProps) {
         </div>
         {/* Formulario de contacto */}
         <form
-          className="bg-white p-10 flex flex-col justify-center gap-6 w-full md:w-1/2"
+          className="bg-white p-4 md:p-10 flex flex-col justify-center gap-6 w-full md:w-1/2"
           onSubmit={handleSubmit}
           autoComplete="off"
         >

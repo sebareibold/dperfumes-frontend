@@ -107,7 +107,9 @@ export default function AdminProducts() {
 
       const products = response.payload || []
       const totalDocs = response.totalProducts || 0
-      const totalPages = response.totalPages || Math.ceil(totalDocs / 10) || 1
+      const totalPages = response.totalPages || Math.ceil(Number(totalDocs) / 10) || 1;
+      setTotalProductsCount(Number(totalDocs));
+      setTotalPages(Number(totalPages));
 
       console.log("AdminProducts - Datos procesados:", {
         productsCount: products.length,
@@ -116,8 +118,6 @@ export default function AdminProducts() {
       })
 
       setProducts(products)
-      setTotalProductsCount(totalDocs)
-      setTotalPages(totalPages)
     } catch (error) {
       console.error("Error loading products:", error)
 

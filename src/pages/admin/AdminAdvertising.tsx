@@ -162,10 +162,10 @@ const AdminAdvertising: React.FC = () => {
       console.log("📦 Respuesta de productos:", productsResponse)
 
       if (productsResponse.success && productsResponse.payload) {
-        setProducts(productsResponse.payload)
+        setProducts(productsResponse.payload as any[]); // O usa Perfume[] si corresponde
 
         const uniqueCategories = [
-          ...new Set(productsResponse.payload.map((product: Product) => product.category).filter(Boolean)),
+          ...new Set((productsResponse.payload as any[]).map((product) => product.category).filter(Boolean)),
         ] as string[]
         setCategories(uniqueCategories)
         console.log("📂 Categorías encontradas:", uniqueCategories)
