@@ -1089,10 +1089,10 @@ export default function AdminContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <p className="text-gray-300 text-lg">Cargando contenido...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center space-y-6">
+          <div className="animate-spin rounded-full border-4 border-black/10 border-t-black h-14 w-14 mb-2" />
+          <p className="text-black text-lg font-light tracking-widest uppercase">Cargando contenido...</p>
         </div>
       </div>
     );
