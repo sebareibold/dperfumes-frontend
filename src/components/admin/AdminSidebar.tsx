@@ -33,8 +33,8 @@ export default function AdminSidebar({
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: Home, exact: true },
     { name: "Perfumes", href: "/admin/products", icon: Sparkles },
-    { name: "Órdenes", href: "/admin/orders", icon: ShoppingCart },
     { name: "Envases", href: "/admin/envases", icon: FlaskRound },
+    { name: "Órdenes", href: "/admin/orders", icon: ShoppingCart },
     { name: "Contenido", href: "/admin/content", icon: FileText },
     { name: "Config", href: "/admin/settings", icon: Settings },
   ]

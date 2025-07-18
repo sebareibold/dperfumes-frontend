@@ -28,42 +28,41 @@ import { apiService } from "../../services/api"
 
 interface Order {
   _id: string
-  orderNumber: string
-  shippingInfo: {
-    fullName: string
-    email: string
-    phone: string
-    address: string
-    city: string
-    postalCode?: string
-    notes?: string
+  numeroOrden: string
+  infoEnvio: {
+    nombreCompleto: string
+    correo: string
+    telefono: string
+    direccion: string
+    ciudad: string
+    codigoPostal?: string
+    notas?: string
   }
-  paymentMethod: "cash" | "transfer"
-  status:
-    | "pending_manual"
-    | "pending_transfer_proof"
-    | "pending_transfer_confirmation"
-    | "paid"
-    | "cancelled"
-    | "refunded"
+  metodoPago: "efectivo" | "transferencia"
+  estado:
+    | "pendiente_manual"
+    | "pendiente_comprobante_transferencia"
+    | "pendiente_confirmacion_transferencia"
+    | "pagado"
+    | "cancelado"
+    | "reembolsado"
     | "confirmado"
   subtotal: number
-  shippingCost: number
+  costoEnvio: number
   total: number
-  notes?: string
-  adminNotes?: string
+  notas?: string
+  notasAdmin?: string
   createdAt: string
   updatedAt: string
-  paidAt?: string
-  transferProofUrl?: string
+  pagadoEn?: string
+  urlComprobanteTransferencia?: string
   items: Array<{
-    productId: string
-    title: string
-    price: number
-    quantity: number
-    size?: string
-    color?: string
-    image?: string
+    productoId: string
+    nombre: string
+    volumen: { ml: string; precio: number }
+    tipo: string
+    cantidad: number
+    imagen?: string
   }>
 }
 
@@ -92,10 +91,17 @@ export default function AdminOrderDetail() {
 
       const response = await apiService.getOrder(orderId)
 
+      function mapOrderFromBackend(order: any) {
+        return {
+          ...order,
+        };
+      }
+
       if (response.success) {
-        setOrder(response.order)
-        setNewStatus(response.order.status)
-        setAdminNotes(response.order.adminNotes || "")
+        const mappedOrder = mapOrderFromBackend(response.order)
+        setOrder(mappedOrder)
+        setNewStatus(mappedOrder.estado)
+        setAdminNotes(mappedOrder.notasAdmin || "")
       } else {
         throw new Error(response.error || "Error cargando la orden")
       }
@@ -147,37 +153,37 @@ export default function AdminOrderDetail() {
       }
     } = {
       // Add index signature
-      pending_manual: {
+      pendiente_manual: {
         label: "Pendiente (Efectivo)",
         className: "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30",
         icon: Clock,
         bgClass: "bg-amber-500/10",
       },
-      pending_transfer_proof: {
+      pendiente_comprobante_transferencia: {
         label: "Pendiente (Falta Comprobante)",
         className: "bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-400 border-orange-500/30",
         icon: ImageIcon, // Nuevo icono
         bgClass: "bg-orange-500/10",
       },
-      pending_transfer_confirmation: {
+      pendiente_confirmacion_transferencia: {
         label: "Pendiente (Verificar Comprobante)",
         className: "bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 text-purple-400 border-purple-500/30",
         icon: CreditCard, // O un icono más específico de revisión
         bgClass: "bg-purple-500/10",
       },
-      paid: {
+      pagado: {
         label: "Pagado",
         className: "bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30",
         icon: CheckCircle,
         bgClass: "bg-emerald-500/10",
       },
-      cancelled: {
+      cancelado: {
         label: "Cancelado",
         className: "bg-gradient-to-r from-red-500/20 to-rose-500/20 text-red-400 border-red-500/30",
         icon: XCircle,
         bgClass: "bg-red-500/10",
       },
-      refunded: {
+      reembolsado: {
         label: "Reembolsado",
         className: "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30",
         icon: RefreshCw,
@@ -191,7 +197,7 @@ export default function AdminOrderDetail() {
       },
     }
 
-    return configs[status] || configs.pending_manual
+    return configs[status] || configs.pendiente_manual
   }
 
   const getStatusBadge = (status: string) => {
@@ -209,7 +215,7 @@ export default function AdminOrderDetail() {
   }
 
   const getPaymentMethodText = (method: string) => {
-    return method === "cash" ? "Pago en Efectivo" : "Transferencia Bancaria"
+    return method === "efectivo" ? "Pago en Efectivo" : "Transferencia Bancaria"
   }
 
   if (loading) {
@@ -271,7 +277,7 @@ export default function AdminOrderDetail() {
     )
   }
 
-  const statusConfig = getStatusConfig(order.status)
+  const statusConfig = getStatusConfig(order.estado)
 
   return (
     <div className="space-y-8">
@@ -286,7 +292,7 @@ export default function AdminOrderDetail() {
             Volver
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Orden #{order.orderNumber}</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Orden #{order.numeroOrden}</h1>
             <p className="text-gray-400">
               Creada el{" "}
               {new Date(order.createdAt).toLocaleDateString("es-ES", {
@@ -305,7 +311,7 @@ export default function AdminOrderDetail() {
         </div>
 
         <div className={`p-4 rounded-xl ${statusConfig.bgClass} border border-gray-700/50`}>
-          {getStatusBadge(order.status)}
+          {getStatusBadge(order.estado)}
         </div>
       </div>
 
@@ -324,41 +330,47 @@ export default function AdminOrderDetail() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {order.items.map((item, index) => (
+                {Array.isArray(order.items) && order.items.length > 0 ? order.items.map((item, index) => (
                   <div
                     key={index}
                     className="flex items-center p-4 bg-gray-900/30 rounded-xl border border-gray-700/30"
                   >
                     <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-600/50">
                       <img
-                        src={item.image || "/placeholder.svg?height=80&width=80"}
-                        alt={item.title}
+                        src={item.imagen || "/placeholder.svg?height=80&width=80"}
+                        alt={item.nombre}
                         className="h-full w-full object-cover object-center"
                       />
                     </div>
                     <div className="ml-6 flex-1">
-                      <h3 className="text-lg font-medium text-white mb-1">{item.title}</h3>
+                      <h3 className="text-lg font-medium text-white mb-1">{item.nombre || <span className="text-gray-400 italic">Sin dato</span>}</h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-400 mb-2">
-                        {item.size && <span className="px-2 py-1 bg-gray-700/50 rounded-md">Talla: {item.size}</span>}
-                        {item.color && <span className="px-2 py-1 bg-gray-700/50 rounded-md">Color: {item.color}</span>}
+                        {item.tipo && <span className="px-2 py-1 bg-gray-700/50 rounded-md">Tipo: {item.tipo}</span>}
+                        {item.volumen && <span className="px-2 py-1 bg-gray-700/50 rounded-md">Volumen: {item.volumen.ml}</span>}
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-300">
-                          Cantidad: <span className="font-medium text-white">{item.quantity}</span>
+                          Cantidad: <span className="font-medium text-white">{typeof item.cantidad === "number" ? item.cantidad : <span className="text-gray-400 italic">Sin dato</span>}</span>
                         </span>
                         <span className="text-gray-300">
-                          Precio unitario:{" "}
-                          <span className="font-medium text-white">${item.price.toLocaleString()}</span>
+                          Precio unitario: {" "}
+                          {typeof item.volumen?.precio === "number"
+                            ? <span className="font-medium text-white">${item.volumen.precio.toLocaleString()}</span>
+                            : <span className="text-gray-400 italic">Sin precio</span>
+                          }
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-white">
-                        ${(item.price * item.quantity).toLocaleString()}
+                        {typeof item.volumen?.precio === "number" && typeof item.cantidad === "number"
+                          ? `$${(item.volumen.precio * item.cantidad).toLocaleString()}`
+                          : <span className="text-gray-400 italic">Sin precio</span>
+                        }
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : <span className="text-gray-400 italic">Sin productos</span>}
               </div>
 
               {/* Order Totals */}
@@ -366,17 +378,23 @@ export default function AdminOrderDetail() {
                 <div className="bg-gray-900/30 rounded-xl p-6 space-y-3">
                   <div className="flex justify-between text-gray-300">
                     <span>Subtotal</span>
-                    <span className="font-medium">${order.subtotal.toLocaleString()}</span>
+                    <span className="font-medium">{typeof order.subtotal === "number" ? `$${order.subtotal.toLocaleString()}` : <span className="text-gray-400 italic">Sin dato</span>}</span>
                   </div>
                   <div className="flex justify-between text-gray-300">
                     <span>Costo de envío</span>
                     <span className="font-medium">
-                      {order.shippingCost === 0 ? "Gratis" : `$${order.shippingCost.toLocaleString()}`}
+                      {typeof order.costoEnvio === "number"
+                        ? (order.costoEnvio === 0
+                            ? "Gratis"
+                            : `$${order.costoEnvio.toLocaleString()}`
+                          )
+                        : <span className="text-gray-400 italic">Sin dato</span>
+                      }
                     </span>
                   </div>
                   <div className="flex justify-between text-2xl font-bold text-white pt-3 border-t border-gray-700/50">
                     <span>Total</span>
-                    <span>${order.total.toLocaleString()}</span>
+                    <span>{typeof order.total === "number" ? `$${order.total.toLocaleString()}` : <span className="text-gray-400 italic">Sin dato</span>}</span>
                   </div>
                 </div>
               </div>
@@ -405,21 +423,21 @@ export default function AdminOrderDetail() {
                       <User className="h-4 w-4 text-gray-400 mr-3" />
                       <div>
                         <span className="text-gray-400 text-sm">Nombre completo</span>
-                        <div className="font-medium text-white">{order.shippingInfo.fullName}</div>
+                        <div className="font-medium text-white">{order.infoEnvio?.nombreCompleto || <span className="text-gray-400 italic">Sin dato</span>}</div>
                       </div>
                     </div>
                     <div className="flex items-center p-3 bg-gray-900/30 rounded-lg">
                       <Mail className="h-4 w-4 text-gray-400 mr-3" />
                       <div>
                         <span className="text-gray-400 text-sm">Email</span>
-                        <div className="font-medium text-white">{order.shippingInfo.email}</div>
+                        <div className="font-medium text-white">{order.infoEnvio?.correo || <span className="text-gray-400 italic">Sin dato</span>}</div>
                       </div>
                     </div>
                     <div className="flex items-center p-3 bg-gray-900/30 rounded-lg">
                       <Phone className="h-4 w-4 text-gray-400 mr-3" />
                       <div>
                         <span className="text-gray-400 text-sm">Teléfono</span>
-                        <div className="font-medium text-white">{order.shippingInfo.phone}</div>
+                        <div className="font-medium text-white">{order.infoEnvio?.telefono || <span className="text-gray-400 italic">Sin dato</span>}</div>
                       </div>
                     </div>
                   </div>
@@ -432,22 +450,22 @@ export default function AdminOrderDetail() {
                   </h3>
                   <div className="p-4 bg-gray-900/30 rounded-lg">
                     <div className="space-y-2 text-gray-300">
-                      <div className="font-medium text-white">{order.shippingInfo.address}</div>
-                      <div>{order.shippingInfo.city}</div>
-                      {order.shippingInfo.postalCode && <div>CP: {order.shippingInfo.postalCode}</div>}
+                      <div className="font-medium text-white">{order.infoEnvio?.direccion || <span className="text-gray-400 italic">Sin dato</span>}</div>
+                      <div>{order.infoEnvio?.ciudad || <span className="text-gray-400 italic">Sin dato</span>}</div>
+                      {order.infoEnvio?.codigoPostal ? <div>CP: {order.infoEnvio.codigoPostal}</div> : null}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {order.shippingInfo.notes && (
+              {order.infoEnvio?.notas && (
                 <div className="mt-8 pt-6 border-t border-gray-700/50">
                   <h3 className="font-semibold text-white mb-3 flex items-center">
                     <FileText className="h-4 w-4 mr-2 text-yellow-400" />
                     Notas del Cliente
                   </h3>
                   <div className="p-4 bg-gray-900/30 rounded-lg border-l-4 border-yellow-500/50">
-                    <p className="text-gray-300 italic">"{order.shippingInfo.notes}"</p>
+                    <p className="text-gray-300 italic">"{order.infoEnvio.notas}"</p>
                   </div>
                 </div>
               )}
@@ -472,29 +490,29 @@ export default function AdminOrderDetail() {
                 <span className="text-gray-400 text-sm">Método de Pago</span>
                 <div className="font-semibold text-white mt-1 flex items-center">
                   <DollarSign className="h-4 w-4 mr-2 text-green-400" />
-                  {getPaymentMethodText(order.paymentMethod)}
+                  {getPaymentMethodText(order.metodoPago)}
                 </div>
               </div>
 
               <div className="p-4 bg-gray-900/30 rounded-lg">
                 <span className="text-gray-400 text-sm">Estado Actual</span>
-                <div className="mt-2">{getStatusBadge(order.status)}</div>
+                <div className="mt-2">{getStatusBadge(order.estado)}</div>
               </div>
 
               {/* NUEVO: Sección para el comprobante de transferencia */}
-              {order.paymentMethod === "transfer" && (
+              {order.metodoPago === "transferencia" && (
                 <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <span className="text-blue-400 text-sm">Comprobante de Transferencia</span>
                   <div className="font-semibold text-white mt-1">
-                    {order.transferProofUrl ? (
+                    {order.urlComprobanteTransferencia ? (
                       <div className="mt-2">
                         <img
-                          src={order.transferProofUrl || "/placeholder.svg"}
+                          src={order.urlComprobanteTransferencia || "/placeholder.svg"}
                           alt="Comprobante de Transferencia"
                           className="max-w-full h-auto rounded-lg shadow-md border border-gray-700/50"
                         />
                         <a
-                          href={order.transferProofUrl}
+                          href={order.urlComprobanteTransferencia}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center text-blue-300 hover:text-blue-200 transition-colors duration-200 mt-2 text-sm"
@@ -510,12 +528,12 @@ export default function AdminOrderDetail() {
                 </div>
               )}
 
-              {order.paidAt && (
+              {order.pagadoEn && (
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                   <span className="text-emerald-400 text-sm">Fecha de Pago</span>
                   <div className="font-semibold text-white mt-1">
-                    {new Date(order.paidAt).toLocaleDateString("es-ES")} a las{" "}
-                    {new Date(order.paidAt).toLocaleTimeString("es-ES", {
+                    {new Date(order.pagadoEn).toLocaleDateString("es-ES")} a las{" "}
+                    {new Date(order.pagadoEn).toLocaleTimeString("es-ES", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -567,14 +585,14 @@ export default function AdminOrderDetail() {
                   </div>
                 )}
 
-                {order.paidAt && (
+                {order.pagadoEn && (
                   <div className="flex items-start">
                     <div className="w-3 h-3 bg-emerald-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
                     <div>
                       <div className="font-semibold text-white">Pago Confirmado</div>
                       <div className="text-sm text-gray-400 mt-1">
-                        {new Date(order.paidAt).toLocaleDateString("es-ES")} a las{" "}
-                        {new Date(order.paidAt).toLocaleTimeString("es-ES", {
+                        {new Date(order.pagadoEn).toLocaleDateString("es-ES")} a las{" "}
+                        {new Date(order.pagadoEn).toLocaleTimeString("es-ES", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -604,12 +622,12 @@ export default function AdminOrderDetail() {
                   onChange={(e) => setNewStatus(e.target.value)}
                   className="admin-input" /* Usando admin-input */
                 >
-                  <option value="pending_manual">Pendiente (Efectivo)</option>
-                  <option value="pending_transfer_proof">Pendiente (Falta Comprobante)</option>
-                  <option value="pending_transfer_confirmation">Pendiente (Verificar Comprobante)</option>
-                  <option value="paid">Pagado</option>
-                  <option value="cancelled">Cancelado</option>
-                  <option value="refunded">Reembolsado</option>
+                  <option value="pendiente_manual">Pendiente (Efectivo)</option>
+                  <option value="pendiente_comprobante_transferencia">Pendiente (Falta Comprobante)</option>
+                  <option value="pendiente_confirmacion_transferencia">Pendiente (Verificar Comprobante)</option>
+                  <option value="pagado">Pagado</option>
+                  <option value="cancelado">Cancelado</option>
+                  <option value="reembolsado">Reembolsado</option>
                   <option value="confirmado">Confirmado</option>
                 </select>
               </div>
@@ -618,7 +636,7 @@ export default function AdminOrderDetail() {
 
               <button
                 onClick={handleUpdateStatus}
-                disabled={updating || (newStatus === order.status && adminNotes === (order.adminNotes || ""))}
+                disabled={updating || (newStatus === order.estado && adminNotes === (order.notasAdmin || ""))}
                 className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {updating ? (
@@ -634,12 +652,12 @@ export default function AdminOrderDetail() {
                 )}
               </button>
 
-              {newStatus !== order.status && (
+              {newStatus !== order.estado && (
                 <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                   <div className="flex items-center">
                     <AlertTriangle className="h-4 w-4 text-amber-400 mr-2" />
                     <span className="text-amber-400 text-sm">
-                      Cambiarás el estado de "{getStatusConfig(order.status).label}" a "
+                      Cambiarás el estado de "{getStatusConfig(order.estado).label}" a "
                       {getStatusConfig(newStatus).label}"
                     </span>
                   </div>
@@ -649,7 +667,7 @@ export default function AdminOrderDetail() {
           </div>
 
           {/* Confirm Order Button */}
-          {order && order.status === 'pending_manual' && (
+          {order && order.estado === 'pendiente_manual' && (
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4"
               onClick={async () => {

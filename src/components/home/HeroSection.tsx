@@ -1,7 +1,5 @@
 "use client"
 
-import { useNavigate } from "react-router-dom"
-
 // Estilos CSS personalizados para efectos visuales mejorados
 const heroStyles = `
   @keyframes float {
@@ -53,7 +51,6 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ content }: HeroSectionProps) {
-  const navigate = useNavigate()
 
   if (!content) {
     return (
@@ -143,7 +140,12 @@ export default function HeroSection({ content }: HeroSectionProps) {
             </p>
             <button
               className="w-full sm:w-auto inline-block border border-black text-black bg-[#F2F4F7] backdrop-blur-sm px-10 py-3 rounded-full font-sans text-base uppercase tracking-widest font-normal transition-all duration-300 hover:bg-black hover:text-white focus:outline-none shadow-sm hover:shadow-lg"
-              onClick={() => navigate('/#products')}
+              onClick={() => {
+                const catalogSection = document.getElementById('products');
+                if (catalogSection) {
+                  catalogSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
             >
               {content.buttonText}
             </button>

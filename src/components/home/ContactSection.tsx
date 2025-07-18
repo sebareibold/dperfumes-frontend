@@ -4,6 +4,7 @@ import type React from "react"
 import {
   Mail,
   Phone,
+  Map,
   MapPin,
   Clock,
   Instagram,
@@ -13,6 +14,7 @@ import {
   Linkedin,
   Github,
   Globe,
+  MessageCircle,
 } from "lucide-react"
 import { useState } from "react"
 import { apiService } from "../../services/api"
@@ -44,17 +46,20 @@ interface ContactSectionProps {
 }
 
 const iconMap: { [key: string]: React.ElementType } = {
-  Mail: Mail,
-  Phone: Phone,
-  MapPin: MapPin,
-  Clock: Clock,
-  Instagram: Instagram,
-  Facebook: Facebook,
-  X: X,
-  Youtube: Youtube,
-  Linkedin: Linkedin,
-  Github: Github,
-  Globe: Globe,
+  Mail,
+  Phone,
+  Map,
+  MapPin,
+  Clock,
+  Instagram,
+  Facebook,
+  X,
+  Youtube,
+  Linkedin,
+  Github,
+  Globe,
+  Whatsapp: MessageCircle,
+  MessageCircle,
 }
 
 export default function ContactSection({ content }: ContactSectionProps) {
@@ -130,7 +135,8 @@ export default function ContactSection({ content }: ContactSectionProps) {
               <p className="text-white/80 text-sm mb-8">{content.description}</p>
               <div className="space-y-6 mb-8">
                 {content.contactInfo.map((info) => {
-                  const IconComponent = iconMap[info.icon] || Mail
+                  // Usar exactamente el icono guardado en el campo 'icon' del contenido
+                  const IconComponent = iconMap[info.icon] || Mail;
                   return (
                     <div key={info.title} className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10">
@@ -138,9 +144,21 @@ export default function ContactSection({ content }: ContactSectionProps) {
                       </div>
                       <div>
                         <h4 className="text-white font-semibold text-base mb-1">{info.title}</h4>
-                        {info.details.map((detail, i) => (
-                          <p key={i} className="text-white/80 text-sm leading-tight">{detail}</p>
-                        ))}
+                        {info.details.map((detail, i) =>
+                          info.title.toLowerCase() === "whatsapp" || info.icon.toLowerCase() === "whatsapp" ? (
+                            <a
+                              key={i}
+                              href={`https://wa.me/${detail.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hola! Quiero hacer una consulta sobre Daisy Perfumes.')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-white/80 text-sm leading-tight hover:underline hover:text-accent-gold transition-all cursor-pointer"
+                            >
+                              {detail}
+                            </a>
+                          ) : (
+                            <p key={i} className="text-white/80 text-sm leading-tight">{detail}</p>
+                          )
+                        )}
                         {info.description && <p className="text-xs text-white/50 mt-1">{info.description}</p>}
                       </div>
                     </div>
@@ -151,19 +169,57 @@ export default function ContactSection({ content }: ContactSectionProps) {
               {content.socialMedia && content.socialMedia.length > 0 && (
                 <div className="mt-8">
                   <h4 className="text-white font-semibold text-base mb-3">Redes Sociales</h4>
-                  <div className="flex flex-row gap-4">
+                  <div className="space-y-6 mb-8">
                     {content.socialMedia.map((sm) => {
                       const IconComponent = iconMap[sm.icon] || Mail
                       return (
-                        <a
-                          key={sm.name}
-                          href={sm.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-white/10 border border-white/20 p-2 rounded-full hover:bg-white hover:text-black transition-all duration-300 hover:scale-110"
-                        >
-                          <IconComponent className="h-5 w-5 text-white" />
-                        </a>
+                        <div key={sm.name} className="flex items-start gap-4">
+                          {sm.name.toLowerCase() === "whatsapp" || sm.icon.toLowerCase() === "whatsapp" ? (
+                            <a
+                              href={`https://wa.me/${sm.handle.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hola! Quiero hacer una consulta sobre Daisy Perfumes.')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                              aria-label={sm.name}
+                            >
+                              <IconComponent className="h-5 w-5 text-white" />
+                            </a>
+                          ) : (
+                            <a
+                              href={sm.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                              aria-label={sm.name}
+                            >
+                              <IconComponent className="h-5 w-5 text-white" />
+                            </a>
+                          )}
+                          <div>
+                            <span className="text-white font-semibold text-base mb-1">{sm.name}</span>
+                            {sm.handle && (
+                              (sm.name.toLowerCase() === "whatsapp" || sm.icon.toLowerCase() === "whatsapp") ? (
+                                <a
+                                  href={`https://wa.me/${sm.handle.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Hola! Quiero hacer una consulta sobre Daisy Perfumes.')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block text-xs text-white/70 hover:underline hover:text-accent-gold transition-all cursor-pointer"
+                                >
+                                  {sm.handle}
+                                </a>
+                              ) : (
+                                <a
+                                  href={sm.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block text-xs text-white/70 hover:underline hover:text-accent-gold transition-all"
+                                >
+                                  {sm.handle}
+                                </a>
+                              )
+                            )}
+                          </div>
+                        </div>
                       )
                     })}
                   </div>

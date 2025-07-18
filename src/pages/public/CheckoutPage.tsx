@@ -256,25 +256,19 @@ export default function CheckoutPage() {
       }
 
       const orderData = {
-        metodoPago: paymentMethod === "cash" ? "efectivo" : "transferencia",
-        items: items.map((item) => ({
-          productoId: item.id,
+        items: items.map(item => ({
+          productoId: item.productoId, // <-- asegurado
           nombre: item.nombre,
-          cantidad: item.cantidad,
-          volumen: {
-            ml: item.volumen.ml,
-            precio: item.volumen.precio
-          },
+          volumen: item.volumen, // { ml, precio }
           tipo: item.tipo,
-          imagen: item.imagen || "",
+          cantidad: item.cantidad,
+          imagen: item.imagen,
         })),
         infoEnvio: {
           nombreCompleto: shippingInfo.fullName,
           correo: shippingInfo.email,
           telefono: shippingInfo.phone,
-          direccion: wantsShipping
-            ? shippingInfo.address
-            : "Punto de encuentro - Av. Argentina 123, Neuquén Capital",
+          direccion: wantsShipping ? shippingInfo.address : "Punto de encuentro - Av. Argentina 123, Neuquén Capital",
           ciudad: wantsShipping ? shippingInfo.city : "Neuquén",
           codigoPostal: shippingInfo.postalCode || "",
           notas: shippingInfo.notes || "",
@@ -282,10 +276,9 @@ export default function CheckoutPage() {
         subtotal,
         costoEnvio: shippingCost,
         total,
-        notas: `${
-          wantsShipping ? "Envío a domicilio" : "Retiro en punto de encuentro"
-        }. ${shippingInfo.notes || ""}`.trim(),
+        notas: `${wantsShipping ? "Envío a domicilio" : "Retiro en punto de encuentro"}. ${shippingInfo.notes || ""}`.trim(),
         urlComprobanteTransferencia: transferProofUrl,
+        metodoPago: paymentMethod === "cash" ? "efectivo" : "transferencia",
       };
       console.log("[DEBUG] Items que se envían en la orden:", orderData.items);
 

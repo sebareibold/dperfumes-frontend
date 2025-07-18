@@ -239,13 +239,14 @@ export default function ProductDetail() {
       return;
     }
     const itemToAdd = {
+      productoId: product._id, // <-- nuevo campo requerido por el backend
       id: product._id,
       nombre: product.nombre,
       volumen: {
-        ml: selectedEnvase.volumen.toString(),
-        precio: selectedEnvase.precio
+        ml: String(selectedEnvase.volumen),
+        precio: Number(selectedEnvase.precio),
       },
-      tipo: selectedEnvase.tipo,
+      tipo: selectedEnvase.tipo as 'vidrio' | 'plastico',
       imagen: product.imagenes[selectedImage],
     };
     console.log("[DEBUG] Item que se agrega al carrito:", itemToAdd);
@@ -373,32 +374,32 @@ export default function ProductDetail() {
       </svg>
 
       {/* Breadcrumb elegante */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-6">
-        <div className="flex items-center space-x-2 text-sm text-black/60">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex items-center space-x-2 text-xs sm:text-sm text-black/60">
           <button
             onClick={() => navigate("/")}
             className="hover:opacity-75 transition-colors flex items-center space-x-1"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>Inicio</span>
           </button>
           <span>/</span>
-          <span className="font-medium text-black">{product.nombre}</span>
+          <span className="font-medium text-black truncate">{product.nombre}</span>
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-20">
           {/* Image Gallery */}
-          <div className="mb-12 lg:mb-0">
-            <div className="flex flex-col-reverse lg:flex-row">
+          <div className="mb-8 sm:mb-12 lg:mb-0">
+            <div className="flex flex-col-reverse lg:flex-row items-center lg:items-start">
               {/* Thumbnails */}
-              <div className="flex lg:flex-col space-x-4 lg:space-x-0 lg:space-y-4 mt-6 lg:mt-0 lg:mr-6">
+              <div className="flex lg:flex-col space-x-3 sm:space-x-4 lg:space-x-0 lg:space-y-3 sm:lg:space-y-4 mt-4 sm:mt-6 lg:mt-0 lg:mr-4 xl:mr-6">
                 {product.imagenes.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 lg:w-24 lg:h-28 rounded-xl overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-14 h-16 sm:w-16 sm:h-20 lg:w-20 lg:h-24 xl:w-24 xl:h-28 rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all ${
                       selectedImage === index
                         ? "border-black shadow-lg"
                         : "border-gray-200 hover:border-gray-300"
@@ -414,39 +415,39 @@ export default function ProductDetail() {
               </div>
 
               {/* Main Image */}
-              <div className="flex-1">
-                <div className="relative group">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-gray-100 to-white rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <div className="flex-1 flex justify-center w-full">
+                <div className="relative group w-full max-w-[180px] sm:max-w-[220px] md:max-w-[260px] lg:max-w-[300px] xl:max-w-[340px]">
+                  <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-gray-100 to-white rounded-xl sm:rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                   <img
                     src={product.imagenes[selectedImage] || "/placeholder.svg"}
                     alt={product.nombre}
-                    className="product-image-primary relative w-full aspect-[3/4] object-cover rounded-xl shadow-2xl border border-gray-200 bg-white z-20 transform group-hover:scale-105 transition-all duration-500 ease-out hover:shadow-3xl"
+                    className="product-image-primary relative w-full aspect-[3/4] object-cover rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-gray-200 bg-white z-20 transform group-hover:scale-105 transition-all duration-500 ease-out hover:shadow-3xl"
                     style={{
                       boxShadow:
                         "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
                     }}
                   />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Product Info */}
-          <div className="lg:pl-8">
-            <div className="mb-8">
-              <span className="text-xs uppercase tracking-[0.15em] font-medium mb-3 block text-black/60">
+          <div className="lg:pl-6 xl:pl-10 max-w-lg md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+            <div className="mb-5 sm:mb-8">
+              <span className="text-sm uppercase tracking-[0.14em] font-medium mb-2 block text-black/60">
                 {product.categoria}
               </span>
 
-              <h1 className="font-serif text-3xl lg:text-4xl font-semibold uppercase tracking-[0.18em] text-black mb-6 leading-tight">
+              <h1 className="font-serif text-xl sm:text-2xl md:text-3xl font-semibold uppercase tracking-[0.15em] text-black mb-4 sm:mb-6 leading-tight">
                 {product.nombre}
               </h1>
 
               {/* Precio */}
               {selectedEnvase && (
-                <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-3xl lg:text-4xl font-medium text-black">
+                <div className="flex items-center space-x-3 mb-4">
+                  <span className="text-2xl sm:text-3xl font-medium text-black">
                     {typeof selectedEnvase.precio === "number"
                       ? `$${selectedEnvase.precio.toLocaleString()}`
                       : "Sin precio"}
@@ -455,7 +456,7 @@ export default function ProductDetail() {
               )}
 
               <p
-                className="text-sm text-black font-light tracking-wide leading-relaxed max-w-xl mb-8"
+                className="text-sm text-black font-light tracking-wide leading-relaxed max-w-md mb-6"
                 style={{ letterSpacing: "0.08em" }}
               >
                 {product.descripcion}
@@ -464,8 +465,8 @@ export default function ProductDetail() {
               {/* Notas Aromáticas */}
               {product.notasAromaticas &&
                 product.notasAromaticas.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-xs font-medium mb-4 uppercase tracking-[0.1em] flex items-center text-black">
+                  <div className="mb-5">
+                    <h3 className="text-xs font-medium mb-3 uppercase tracking-[0.1em] flex items-center text-black">
                       <Sparkles className="h-4 w-4 mr-2" />
                       Notas Aromáticas
                     </h3>
@@ -473,7 +474,7 @@ export default function ProductDetail() {
                       {product.notasAromaticas.map((nota, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200 bg-white/90 backdrop-blur-md text-black shadow-sm transition-all duration-300"
+                          className="px-3 py-1 rounded-full text-xs font-medium border border-gray-200 bg-white/90 backdrop-blur-md text-black shadow-sm transition-all duration-300"
                         >
                           {nota}
                         </span>
@@ -484,8 +485,8 @@ export default function ProductDetail() {
 
               {/* Presentación */}
               {envasesDisponibles.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xs font-medium mb-4 uppercase tracking-[0.1em] flex items-center text-black">
+                <div className="mb-5">
+                  <h3 className="text-xs font-medium mb-3 uppercase tracking-[0.1em] flex items-center text-black">
                     <Package className="h-4 w-4 mr-2" />
                     Presentación
                   </h3>
@@ -493,39 +494,27 @@ export default function ProductDetail() {
                     {envasesDisponibles.map((envase, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setSelectedEnvaseIndex(idx)}
-                        className={`group relative transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-black/30 ${
-                          selectedEnvaseIndex === idx
-                            ? "transform scale-105"
-                            : "hover:scale-102"
-                        }`}
-                        style={{ fontFamily: "inherit" }}
+                        onClick={() => {
+                          setSelectedEnvaseIndex(idx);
+                          setQuantity(1); // Resetea la cantidad al cambiar de presentación
+                        }}
+                        className={`group relative transition-all duration-200 focus:outline-none w-full max-w-[110px]`}
+                        style={{ minWidth: 90, maxWidth: 110 }}
                       >
-                        {/* Card principal */}
-                        <div className={`relative w-20 h-16 rounded-lg overflow-hidden shadow-md transition-all duration-300 ${
-                          selectedEnvaseIndex === idx
-                            ? "bg-black border-2 border-black text-white"
-                            : "bg-white/90 backdrop-blur-md border border-gray-300 text-black hover:border-black"
-                        }`}>
-                          {/* Contenido del card */}
-                          <div className="relative z-10 h-full flex flex-col justify-center items-center p-2">
-                            {/* Tipo de envase */}
-                            <div className={`text-[10px] font-medium mb-1 transition-colors duration-200 ${
-                              selectedEnvaseIndex === idx ? "text-white" : "text-gray-600"
-                            }`}>
-                              {envase.tipo === "vidrio" ? "Vidrio" : "Plástico"}
-                            </div>
-                            {/* Volumen */}
-                            <div className={`text-xs font-bold transition-colors duration-200 ${
-                              selectedEnvaseIndex === idx ? "text-white" : "text-black"
-                            }`}>
-                              {envase.volumen}ml
-                            </div>
-                          </div>
+                        <div className={
+                          `relative w-full h-14 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-200
+                          font-sans px-4 py-3
+                          ${selectedEnvaseIndex === idx
+                            ? "border-black bg-black text-white shadow-2xl scale-105"
+                            : "border-black bg-white/90 backdrop-blur-md text-black shadow-md hover:bg-black hover:text-white hover:shadow-2xl hover:scale-105"}
+                          `
+                        }>
                           {/* Indicador de selección */}
                           {selectedEnvaseIndex === idx && (
                             <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full"></div>
                           )}
+                          <div className={`text-[10px] font-medium mb-0.5 ${selectedEnvaseIndex === idx ? "text-white" : "text-black group-hover:text-white"}`}>{envase.tipo === "vidrio" ? "Vidrio" : "Plástico"}</div>
+                          <div className={`text-base font-bold ${selectedEnvaseIndex === idx ? "text-white" : "text-black group-hover:text-white"}`}>{envase.volumen}ml</div>
                         </div>
                       </button>
                     ))}
@@ -533,11 +522,9 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              
-
               {/* Quantity Selection */}
-              <div className="mb-6">
-                <h3 className="text-xs font-medium mb-4 uppercase tracking-[0.1em] text-black">
+              <div className="mb-5">
+                <h3 className="text-xs font-medium mb-3 uppercase tracking-[0.1em] text-black">
                   Cantidad
                 </h3>
                 <div className="flex items-center border-2 border-gray-200 rounded-xl w-fit bg-white/90 backdrop-blur-md shadow-md transition-all duration-300">
@@ -548,7 +535,7 @@ export default function ProductDetail() {
                   >
                     <Minus className="h-4 w-4 text-black" />
                   </button>
-                  <span className="px-6 py-3 font-medium text-center min-w-[60px] text-black">
+                  <span className="px-6 py-3 font-medium text-center min-w-[48px] text-black text-base">
                     {quantity}
                   </span>
                   <button
@@ -566,11 +553,11 @@ export default function ProductDetail() {
               </div>
 
               {/* Add to Cart Button */}
-              <div className="mb-8 grid grid-cols-2 gap-6">
+              <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   onClick={handleAddToCart}
                   disabled={!selectedEnvase}
-                  className="w-full py-5 px-6 rounded-xl border-2 border-black text-black bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-black hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-black/20 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-3 group"
+                  className="w-full py-4 px-4 rounded-xl border-2 border-black text-black bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-black hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-black/20 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2 group"
                 >
                   <ShoppingBag className="h-5 w-5 group-hover:animate-bounce" />
                   <span>Agregar al Carrito</span>
@@ -583,7 +570,7 @@ export default function ProductDetail() {
                   },%20${selectedEnvase?.volumen || ""}ml)`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-5 px-6 rounded-xl border-2 border-green-600 text-green-700 bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-green-600 hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-600/20 shadow-lg hover:shadow-xl flex items-center justify-center space-x-3 group"
+                  className="w-full py-4 px-4 rounded-xl border-2 border-green-600 text-green-700 bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-green-600 hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-600/20 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group"
                 >
                   <MessageCircle className="h-5 w-5 group-hover:animate-pulse" />
                   <span>Consultar por WhatsApp</span>
@@ -593,17 +580,17 @@ export default function ProductDetail() {
               {/* Features - Dinámicas desde el backoffice */}
               {productDetailContent &&
                 productDetailContent.infoCards.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     {productDetailContent.infoCards
                       .filter((card) => card.enabled)
                       .map((card, index) => (
                         <div
                           key={index}
-                          className="text-center p-4 rounded-xl border border-gray-200 bg-white/90 backdrop-blur-md"
+                          className="text-center p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 bg-white/90 backdrop-blur-md"
                         >
                           {renderIcon(
                             card.icon,
-                            "h-5 w-5 mx-auto mb-2 text-black"
+                            "h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-2 text-black"
                           )}
                           <div className="text-xs font-medium mb-1 text-black">
                             {card.title}
@@ -619,23 +606,23 @@ export default function ProductDetail() {
               {/* Expandable Sections - Dinámicas desde el backoffice */}
               {productDetailContent &&
                 productDetailContent.expandableSections.length > 0 && (
-                  <div className="space-y-2 mb-8">
+                  <div className="space-y-2 mb-6 sm:mb-8">
                     {productDetailContent.expandableSections
                       .filter((section) => section.enabled)
                       .map((section) => (
                         <div
                           key={section.id}
-                          className="border border-gray-200 rounded-xl bg-white/90 backdrop-blur-md"
+                          className="border border-gray-200 rounded-lg sm:rounded-xl bg-white/90 backdrop-blur-md"
                         >
                           <button
                             onClick={() => toggleSection(section.id)}
-                            className="w-full py-4 px-6 flex items-center justify-between text-left hover:opacity-75 transition-colors rounded-xl"
+                            className="w-full py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between text-left hover:opacity-75 transition-colors rounded-lg sm:rounded-xl"
                           >
-                            <span className="font-medium text-sm text-black">
+                            <span className="font-medium text-xs sm:text-sm text-black">
                               {section.title}
                             </span>
                             <ChevronDown
-                              className={`h-4 w-4 transition-transform text-black ${
+                              className={`h-3 w-3 sm:h-4 sm:w-4 transition-transform text-black ${
                                 expandedSections.has(section.id)
                                   ? "rotate-180"
                                   : ""
@@ -643,8 +630,8 @@ export default function ProductDetail() {
                             />
                           </button>
                           {expandedSections.has(section.id) && (
-                            <div className="px-6 pb-4">
-                              <p className="font-light leading-relaxed text-sm text-black/80">
+                            <div className="px-4 sm:px-6 pb-3 sm:pb-4">
+                              <p className="font-light leading-relaxed text-xs sm:text-sm text-black/80">
                                 {section.content}
                               </p>
                             </div>
@@ -656,12 +643,12 @@ export default function ProductDetail() {
 
               {/* Descripción del Dupe */}
               {product.descripcionDupe && (
-                <div className="mb-8 p-6 rounded-xl border border-gray-200 bg-white/90 backdrop-blur-md">
-                  <h3 className="font-serif text-lg font-medium mb-3 flex items-center text-black">
-                    <Heart className="h-5 w-5 mr-2" />
+                <div className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg sm:rounded-xl border border-gray-200 bg-white/90 backdrop-blur-md">
+                  <h3 className="font-serif text-base sm:text-lg font-medium mb-2 sm:mb-3 flex items-center text-black">
+                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                     Información del Dupe
                   </h3>
-                  <p className="font-light leading-relaxed text-sm text-black/80">
+                  <p className="font-light leading-relaxed text-xs sm:text-sm text-black/80">
                     {product.descripcionDupe}
                   </p>
                 </div>
@@ -672,22 +659,22 @@ export default function ProductDetail() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-24">
-            <h2 className="font-serif text-3xl font-semibold uppercase tracking-[0.18em] text-black mb-12 text-center">
+          <div className="mt-16 sm:mt-20 lg:mt-24">
+            <h2 className="font-serif text-2xl sm:text-3xl font-semibold uppercase tracking-[0.15em] sm:tracking-[0.18em] text-black mb-8 sm:mb-12 text-center">
               También te puede{" "}
               <span className="italic text-black/60">interesar</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <div
                   key={relatedProduct._id}
                   className="group relative overflow-hidden transition-all duration-500 ease-in-out
-          shadow-lg hover:shadow-xl rounded-xl cursor-pointer flex flex-col hover:scale-[1.03]
+          shadow-lg hover:shadow-xl rounded-lg sm:rounded-xl cursor-pointer flex flex-col hover:scale-[1.03]
           border border-gray-200 bg-white/90 backdrop-blur-md"
                   onClick={() => navigate(`/product/${relatedProduct._id}`)}
                 >
                   {/* Image Container */}
-                  <div className="aspect-[3/4] rounded-t-xl overflow-hidden relative">
+                  <div className="aspect-[3/4] rounded-t-lg sm:rounded-t-xl overflow-hidden relative">
                     <img
                       src={relatedProduct.imagenes?.[0] || "/placeholder.svg"}
                       alt={relatedProduct.nombre}
@@ -698,11 +685,11 @@ export default function ProductDetail() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="font-serif font-medium mb-3 text-sm line-clamp-2 text-black">
+                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                    <h3 className="font-serif font-medium mb-2 sm:mb-3 text-xs sm:text-sm line-clamp-2 text-black">
                       {relatedProduct.nombre}
                     </h3>
-                    <p className="font-semibold text-lg mb-4 text-black">
+                    <p className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-black">
                       ${Math.round(relatedProduct.envases?.[0]?.precio || 0).toLocaleString()}
                     </p>
 
@@ -712,7 +699,7 @@ export default function ProductDetail() {
                         e.stopPropagation();
                         navigate(`/product/${relatedProduct._id}`);
                       }}
-                      className="w-full py-3 rounded-full border border-black text-black bg-white/90 backdrop-blur-md font-sans text-xs uppercase tracking-widest font-normal transition-all duration-300 hover:bg-black hover:text-white shadow-sm hover:shadow-lg mt-auto"
+                      className="w-full py-2 sm:py-3 rounded-full border border-black text-black bg-white/90 backdrop-blur-md font-sans text-xs uppercase tracking-widest font-normal transition-all duration-300 hover:bg-black hover:text-white shadow-sm hover:shadow-lg mt-auto"
                     >
                       Ver más
                     </button>

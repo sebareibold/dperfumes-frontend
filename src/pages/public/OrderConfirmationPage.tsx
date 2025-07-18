@@ -14,6 +14,11 @@ import {
   MessageCircle,
 } from "lucide-react"
 import { apiService } from "../../services/api"
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import React from "react";
+import InvoiceDocument from '../../components/utils/InvoiceDocument';
+import type { InvoiceItem } from '../../components/utils/InvoiceDocument';
 
 export default function OrderConfirmationPage() {
   const { orderNumber: paramOrderNumber } = useParams<{ orderNumber: string }>()
@@ -22,6 +27,8 @@ export default function OrderConfirmationPage() {
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showInvoice, setShowInvoice] = useState(false);
+  const invoiceRef = React.useRef<HTMLDivElement>(null);
 
   const orderData = location.state?.order
   const wantsShipping = location.state?.wantsShipping
@@ -95,286 +102,67 @@ export default function OrderConfirmationPage() {
     }
   }
 
-  const handlePrintInvoice = () => {
-    // Crear ventana de factura
-    const invoiceWindow = window.open("", "_blank", "width=800,height=600")
-    if (!invoiceWindow) return
-
-    const invoiceHTML = generateInvoiceHTML()
-    invoiceWindow.document.write(invoiceHTML)
-    invoiceWindow.document.close()
-
-    // Esperar a que cargue y luego imprimir
-    invoiceWindow.onload = () => {
-      invoiceWindow.print()
-      invoiceWindow.close()
-    }
-  }
-
-  const generateInvoiceHTML = () => {
-    const currentDate = new Date().toLocaleDateString("es-AR")
-    const orderDate = new Date(createdAt || Date.now()).toLocaleDateString("es-AR")
-
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Factura - Orden #${numeroOrden}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-        <style>
-          body {
-            font-family: 'Open Sans', Arial, sans-serif;
-            color: #111;
-            background: #fff;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 32px;
-            font-size: 14px;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 32px;
-            border-bottom: 2px solid #111;
-            padding-bottom: 18px;
-            letter-spacing: 2px;
-          }
-          .company-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: #111;
-            margin-bottom: 4px;
-            text-shadow: 2px 2px 0 #fff, 4px 4px 0 #1111;
-          }
-          .company-info {
-            font-size: 13px;
-            color: #222;
-            letter-spacing: 1px;
-          }
-          .invoice-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #111;
-            text-align: center;
-            margin: 36px 0 18px 0;
-            letter-spacing: 2px;
-            border-bottom: 2px dashed #111;
-            padding-bottom: 12px;
-            text-transform: uppercase;
-          }
-          .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #111;
-            padding-bottom: 4px;
-            letter-spacing: 1px;
-          }
-          .invoice-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 18px;
-            border-bottom: 1px solid #111;
-            padding-bottom: 10px;
-          }
-          .client-shipping {
-            display: flex;
-            gap: 48px;
-            margin-bottom: 18px;
-          }
-          .client-data, .shipping-data {
-            flex: 1;
-          }
-          .client-data p, .shipping-data p {
-            margin: 2px 0 0 0;
-            font-size: 14px;
-          }
-          .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 18px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px 0 #1112;
-          }
-          .items-table th, .items-table td {
-            border: 1px solid #111;
-            padding: 12px 14px;
-            text-align: left;
-            font-size: 14px;
-          }
-          .items-table th {
-            background: #f7f7f7;
-            color: #111;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: 'Playfair Display', serif;
-            font-size: 14px;
-            border-bottom: 2px solid #111;
-          }
-          .items-table td {
-            font-family: 'Open Sans', Arial, sans-serif;
-            border-bottom: 1px dashed #111;
-          }
-          .totals {
-            text-align: right;
-            margin-top: 18px;
-          }
-          .totals table {
-            margin-left: auto;
-            border-collapse: collapse;
-            width: 60%;
-          }
-          .totals td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #111;
-            font-size: 15px;
-          }
-          .total-final {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #111;
-            border-top: 2px solid #111 !important;
-            padding-top: 8px !important;
-            letter-spacing: 1px;
-          }
-          .footer {
-            margin-top: 32px;
-            text-align: center;
-            font-size: 12px;
-            color: #222;
-            border-top: 1px solid #111;
-            padding-top: 16px;
-            letter-spacing: 1px;
-          }
-          @media print {
-            body {
-              margin: 0;
-              padding: 0;
-              box-shadow: none;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            .no-print { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="company-name">DAISY PERFUMES</div>
-          <div class="company-info">
-            Av. Argentina 123, Neuquén Capital<br>
-            Tel: (0299) 512-3456 | Email: info@daisyperfumes.com<br>
-            CUIT: 30-12345678-9
-          </div>
-        </div>
-
-        <div class="invoice-title">Factura de Venta</div>
-        <!-- Línea separadora eliminada para un look más limpio -->
-
-        <div class="invoice-details">
-          <div>
-            <strong>Número de Orden:</strong> #${numeroOrden}<br>
-            <strong>Fecha de Emisión:</strong> ${currentDate}<br>
-            <strong>Fecha de Pedido:</strong> ${orderDate}
-          </div>
-          <div style="text-align: right;">
-            <strong>Estado:</strong> ${estado === "pagado" ? "PAGADO" : "PENDIENTE"}<br>
-            <strong>Método de Pago:</strong> ${metodoPago === "efectivo" ? "Efectivo" : "Transferencia"}
-          </div>
-        </div>
-
-        <div class="section-title">Datos del Cliente y Envío</div>
-        <div class="client-shipping">
-          <div class="client-data">
-            <p><strong>Nombre:</strong> ${nombreCompleto}</p>
-            <p><strong>Email:</strong> ${correo}</p>
-            <p><strong>Teléfono:</strong> ${telefono}</p>
-          </div>
-          <div class="shipping-data">
-            <p><strong>Dirección:</strong> ${direccion}</p>
-            <p><strong>Ciudad:</strong> ${ciudad}</p>
-          </div>
-        </div>
-
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Volumen</th>
-              <th>Tipo</th>
-              <th>Cantidad</th>
-              <th>Precio Unit.</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              items
-                ?.map(
-                  (item: {
-                    nombre: string;
-                    volumen: { ml: string; precio: number };
-                    tipo: string;
-                    cantidad: number;
-                    imagen?: string;
-                  }) => `
-              <tr>
-                <td>${item.nombre}</td>
-                <td>${item.volumen?.ml || ""}</td>
-                <td>${item.tipo || ""}</td>
-                <td>${item.cantidad}</td>
-                <td>$${item.volumen?.precio?.toLocaleString("es-AR")}</td>
-                <td>$${(item.volumen?.precio * item.cantidad)?.toLocaleString("es-AR")}</td>
-              </tr>
-            `,
-                )
-                .join("") || ""
-            }
-          </tbody>
-        </table>
-
-        <div class="totals">
-          <table>
-            <tr>
-              <td>Subtotal:</td>
-              <td>$${subtotal?.toLocaleString("es-AR")}</td>
-            </tr>
-            <tr>
-              <td>${wantsShipping ? "Envío:" : "Punto de encuentro:"}</td>
-              <td>${wantsShipping ? `$${costoEnvio?.toLocaleString("es-AR")}` : "Gratis"}</td>
-            </tr>
-            <tr class="total-final">
-              <td><strong>TOTAL:</strong></td>
-              <td><strong>$${total?.toLocaleString("es-AR")}</strong></td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- Línea separadora eliminada para un look más limpio -->
-
-        <div class="footer">
-          <p><strong>¡Gracias por tu compra!</strong></p>
-          <p>Esta factura fue generada automáticamente el ${currentDate}</p>
-          <p>Para consultas sobre tu pedido, contactanos por WhatsApp: +54 299 512 3456</p>
-        </div>
-      </body>
-      </html>
-    `
-  }
+  const handleDownloadInvoicePDF = async () => {
+    setShowInvoice(true);
+    setTimeout(async () => {
+      const input = invoiceRef.current;
+      if (!input) return;
+      const canvas = await html2canvas(input, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pageWidth;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Factura-DaisyPerfumes-Orden-${numeroOrden}.pdf`);
+      setShowInvoice(false);
+    }, 100);
+  };
 
   const handleWhatsAppContact = () => {
     const message = `Hola! Acabo de realizar la orden #${numeroOrden}. Me gustaría confirmar los detalles y coordinar ${wantsShipping ? "el envío" : "el punto de encuentro"}.`
     const whatsappUrl = `https://wa.me/5492995123456?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, "_blank")
   }
+
+  // Datos para la factura
+  const company = {
+    logoUrl: '/icono_logo.png',
+    name: 'Daisy Perfumes Artesanales',
+    address: "Av. Siempreviva 742, Neuquén Capital",
+    email: "info@daisyperfumes.com",
+    phone: "(0299) 400-1234",
+    cuit: "30-98765432-1",
+  };
+  const client = {
+    name: nombreCompleto,
+    address: direccion,
+    email: correo,
+    phone: telefono,
+    city: ciudad,
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const invoiceItems: InvoiceItem[] = items.map((item: any) => ({
+    description: item.titulo || item.descripcion || item.nombre || 'Producto',
+    quantity: item.cantidad || item.quantity || 1,
+    unitPrice: item.precio || item.price || 0,
+    total: (item.precio || item.price || 0) * (item.cantidad || item.quantity || 1),
+  }));
+  const invoice = {
+    number: numeroOrden,
+    date: createdAt ? new Date(createdAt).toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR'),
+    dueDate: undefined,
+    items: invoiceItems,
+    subtotal: subtotal || 0,
+    shippingCost: costoEnvio,
+    total: total || 0,
+    paymentTerms: metodoPago === 'efectivo' ? 'Pago en efectivo al recibir.' : 'Transferencia bancaria.',
+    paymentMethod: metodoPago,
+    status: estado,
+    notes: orderData?.notas || '',
+    wantsShipping: wantsShipping,
+  };
 
   if (loading) {
     return (
@@ -647,19 +435,34 @@ export default function OrderConfirmationPage() {
           </div>
         </div>
 
+        {/* Botón para ver la factura en pantalla */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={() => setShowInvoice((v) => !v)}
+            className="px-6 py-3 border-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg"
+            style={{ borderColor: "#111", color: "#111", backgroundColor: "white" }}
+          >
+            {showInvoice ? 'Ocultar Factura' : 'Ver Factura'}
+          </button>
+        </div>
+
+        {/* Factura visual (solo si showInvoice) */}
+        {showInvoice && (
+          <div ref={invoiceRef} className="mb-8 bg-white p-6 rounded-xl shadow" style={{ overflowX: 'auto' }}>
+            <InvoiceDocument company={company} client={client} invoice={invoice} />
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
           <button
-            onClick={handlePrintInvoice}
+            onClick={handleDownloadInvoicePDF}
             className="flex items-center justify-center px-6 py-3 border-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 group bg-white hover:bg-[linear-gradient(90deg,#333_0%,#000_100%)] group hover:text-white"
-            style={{
-              borderColor: "var(--clay)",
-              color: "var(--clay)"
-            }}
+            style={{ borderColor: "var(--bone)", color: "var(--clay)" }}
           >
             <span className="transition-colors duration-300 flex items-center group-hover:text-white">
             <Printer className="h-5 w-5 mr-2 group-hover:text-white transition-colors duration-300" />
-            Imprimir Factura
+            Descargar Factura (PDF)
             </span>
           </button>
 
@@ -734,6 +537,44 @@ export default function OrderConfirmationPage() {
           </div>
         </div>
       </div>
+      
+      {/* Factura oculta para PDF */}
+      {showInvoice && (
+        <div style={{ position: "absolute", left: -9999, top: 0 }}>
+          <div ref={invoiceRef}>
+            <InvoiceDocument
+              company={{
+                logoUrl: '/logo.png',
+                name: 'Daisy Perfumes',
+                address: 'Neuquén Capital',
+                email: 'daisyperfumes@gmail.com',
+                phone: '(0299) 512-3456',
+              }}
+              client={{
+                name: nombreCompleto,
+                address: ciudad,
+                email: correo,
+                phone: telefono,
+              }}
+              invoice={{
+                number: numeroOrden,
+                date: new Date(createdAt || Date.now()).toLocaleDateString('es-AR'),
+                items: (items as Array<{ nombre: string; volumen?: { ml?: string; precio?: number }; tipo?: string; cantidad: number; imagen?: string }> | undefined)?.map((item) => ({
+                  description: `${item.nombre} ${item.volumen?.ml ? `- ${item.volumen.ml}` : ''} ${item.tipo ? `- ${item.tipo}` : ''}`.trim(),
+                  quantity: item.cantidad,
+                  unitPrice: item.volumen?.precio || 0,
+                  total: (item.volumen?.precio || 0) * item.cantidad,
+                })) as InvoiceItem[],
+                subtotal: subtotal || 0,
+                tax: 0, // Si tienes desglose de impuestos, cámbialo aquí
+                total: total || 0,
+                paymentTerms: wantsShipping ? `Envío a domicilio ($${costoEnvio?.toLocaleString('es-AR')})` : 'Retiro en punto de encuentro',
+                accentColor: '#1976d2',
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

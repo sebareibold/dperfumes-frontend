@@ -4,6 +4,7 @@ import type React from "react"
 import { createContext, useState, useEffect, useContext } from "react"
 
 interface CartItem {
+  productoId: string; // <-- nuevo campo obligatorio
   id: string
   nombre: string
   volumen: {
