@@ -91,16 +91,40 @@ export default function AdminOrderDetail() {
 
       const response = await apiService.getOrder(orderId)
 
-      function mapOrderFromBackend(order: any) {
+      function mapOrderFromBackend(order: unknown): Order {
+        if (typeof order === 'object' && order !== null && '_id' in order && 'estado' in order) {
+          const o = order as Record<string, unknown>;
+          // Validar que el estado sea válido
+          const estado = VALID_ORDER_STATUSES.includes(o.estado as OrderStatus)
+            ? (o.estado as OrderStatus)
+            : "pendiente_manual";
+          return {
+            ...o,
+            estado,
+          } as Order;
+        }
+        // Fallback seguro
         return {
-          ...order,
+          _id: '',
+          numeroOrden: '',
+          infoEnvio: {
+            nombreCompleto: '', correo: '', telefono: '', direccion: '', ciudad: ''
+          },
+          metodoPago: 'efectivo',
+          estado: 'pendiente_manual',
+          subtotal: 0,
+          costoEnvio: 0,
+          total: 0,
+          createdAt: '',
+          updatedAt: '',
+          items: [],
         };
       }
 
       if (response.success) {
         const mappedOrder = mapOrderFromBackend(response.order)
         setOrder(mappedOrder)
-        setNewStatus(mappedOrder.estado)
+        setNewStatus(mappedOrder.estado as OrderStatus); // Setear el estado inicial correctamente y tipado
         setAdminNotes(mappedOrder.notasAdmin || "")
       } else {
         throw new Error(response.error || "Error cargando la orden")
@@ -124,8 +148,8 @@ export default function AdminOrderDetail() {
 
       if (response.success) {
         setOrder(response.order)
-        // Removed setEditingNotes(false)
-        // Show success message
+
+
         const successDiv = document.createElement("div")
         successDiv.className = "fixed top-4 right-4 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg z-50"
         successDiv.textContent = "Orden actualizada exitosamente!"
@@ -135,7 +159,6 @@ export default function AdminOrderDetail() {
         throw new Error(response.error || "Error actualizando la orden")
       }
     } catch (err: unknown) {
-      // Type 'err' as unknown
       console.error("Error updating order:", err)
       alert(`Error actualizando la orden: ${err instanceof Error ? err.message : "Error desconocido"}`) // Narrow type
     } finally {
@@ -217,6 +240,18 @@ export default function AdminOrderDetail() {
   const getPaymentMethodText = (method: string) => {
     return method === "efectivo" ? "Pago en Efectivo" : "Transferencia Bancaria"
   }
+
+  // Definir los estados válidos como constante
+  const VALID_ORDER_STATUSES = [
+    "pending_manual",
+    "pending_transfer_proof",
+    "pending_transfer_confirmation",
+    "paid",
+    "cancelled",
+    "refunded",
+    "confirmado"
+  ] as const;
+  type OrderStatus = typeof VALID_ORDER_STATUSES[number];
 
   if (loading) {
     return (
@@ -618,17 +653,18 @@ export default function AdminOrderDetail() {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-3">Nuevo Estado</label>
                 <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
+                  value={VALID_ORDER_STATUSES.includes(newStatus as OrderStatus) ? newStatus : ""}
+                  onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
                   className="admin-input" /* Usando admin-input */
                 >
-                  <option value="pendiente_manual">Pendiente (Efectivo)</option>
-                  <option value="pendiente_comprobante_transferencia">Pendiente (Falta Comprobante)</option>
-                  <option value="pendiente_confirmacion_transferencia">Pendiente (Verificar Comprobante)</option>
-                  <option value="pagado">Pagado</option>
-                  <option value="cancelado">Cancelado</option>
-                  <option value="reembolsado">Reembolsado</option>
-                  <option value="confirmado">Confirmado</option>
+                
+                  <option value="" disabled>Selecciona un estado...</option>
+                  <option value="pending_manual">Pendiente (Efectivo)</option>
+                  <option value="pending_transfer_proof">Pendiente (Falta Comprobante)</option>
+                  <option value="pending_transfer_confirmation">Pendiente (Verificar Comprobante)</option>
+                  <option value="paid">Pagado</option>
+                  <option value="cancelled">Cancelado</option>
+                  <option value="refunded">Reembolsado</option>
                 </select>
               </div>
 
@@ -636,7 +672,11 @@ export default function AdminOrderDetail() {
 
               <button
                 onClick={handleUpdateStatus}
-                disabled={updating || (newStatus === order.estado && adminNotes === (order.notasAdmin || ""))}
+                disabled={
+                  updating ||
+                  (newStatus === order.estado && adminNotes === (order.notasAdmin || "")) ||
+                  !VALID_ORDER_STATUSES.includes(newStatus as OrderStatus)
+                }
                 className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {updating ? (

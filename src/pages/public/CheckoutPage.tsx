@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../contexts/CartContext";
 import { apiService } from "../../services/api";
+import toast from "react-hot-toast";
 
 interface ShippingInfo {
   fullName: string;
@@ -212,12 +213,12 @@ export default function CheckoutPage() {
     if (file) {
       const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
       if (!validTypes.includes(file.type)) {
-        alert("Por favor, sube una imagen válida (JPG, PNG, WEBP)");
+        toast.error("Por favor, sube una imagen válida (JPG, PNG, WEBP)");
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        alert("La imagen no puede superar los 5MB");
+        toast.error("La imagen no puede superar los 5MB");
         return;
       }
 
@@ -231,7 +232,7 @@ export default function CheckoutPage() {
     }
 
     if (items.length === 0) {
-      alert("Tu carrito está vacío");
+      toast.error("Tu carrito está vacío");
       navigate("/cart");
       return;
     }
@@ -288,6 +289,7 @@ export default function CheckoutPage() {
 
       if (response.success) {
         clearCart();
+        toast.success("¡Compra realizada con éxito!", { duration: 4000 });
         navigate(`/order-confirmation/${response.order.numeroOrden}`, {
           state: {
             order: response.order,
@@ -318,8 +320,7 @@ export default function CheckoutPage() {
           errorMessage = error.message;
         }
       }
-
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }

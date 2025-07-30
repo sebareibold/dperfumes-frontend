@@ -54,10 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Cargar usuario desde localStorage al iniciar
+  // Cargar usuario desde sessionStorage al iniciar
   useEffect(() => {
-    const storedUser = localStorage.getItem("adminUser");
-    const storedToken = localStorage.getItem("adminToken");
+    const storedUser = sessionStorage.getItem("adminUser");
+    const storedToken = sessionStorage.getItem("adminToken");
 
     if (storedUser && storedToken) {
       try {
@@ -68,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("token", storedToken);
       } catch (error) {
         console.error("Error al parsear el usuario almacenado:", error);
-        localStorage.removeItem("adminUser");
-        localStorage.removeItem("adminToken");
+        sessionStorage.removeItem("adminUser");
+        sessionStorage.removeItem("adminToken");
       }
     }
 
@@ -93,9 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: apiUser.role || '',
             name: apiUser.name || apiUser.firstName || 'Admin',
           };
-          localStorage.setItem("adminUser", JSON.stringify(userData));
+          sessionStorage.setItem("adminUser", JSON.stringify(userData));
           setUser(userData);
           setToken(typeof response.token === "string" ? response.token : null);
+          sessionStorage.setItem("adminToken", typeof response.token === "string" ? response.token : "");
           console.log("AuthContext - Login exitoso:", userData);
           return true;
         } else {
@@ -111,8 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ); // Dependencias vacías porque apiService es una instancia singleton y setUser/setToken son estables.
 
   const logout = useCallback(() => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
     setUser(null);
     setToken(null);
     console.log("AuthContext - Usuario desconectado");

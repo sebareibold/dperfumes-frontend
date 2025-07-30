@@ -291,7 +291,9 @@ export default function CategoryPage() {
                     <div className="flex items-end justify-between mt-2">
                       <div>
                         <span className="text-base font-semibold text-black">
-                          {product.volumen && product.volumen.length > 0 ? `$${product.volumen[0].precio}` : 'Sin precio'}
+                          {product.volumen && product.volumen.length > 0
+                            ? `$${Math.min(...product.volumen.map(v => v.precio)).toLocaleString()}`
+                            : 'Sin precio'}
                         </span>
                         {/* Precio de envase plástico, si existe */}
                         {product.volumen && product.volumen.length > 1 && (

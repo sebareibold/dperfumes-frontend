@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../contexts/CartContext";
 import { apiService } from "../../services/api";
+import toast from "react-hot-toast";
 
 // Estilos CSS personalizados para efectos visuales mejorados
 const productDetailStyles = `
@@ -235,7 +236,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!product || !selectedEnvase) {
-      alert("Por favor selecciona una presentación");
+      toast.error("Por favor selecciona una presentación");
       return;
     }
     const itemToAdd = {
@@ -251,9 +252,7 @@ export default function ProductDetail() {
     };
     console.log("[DEBUG] Item que se agrega al carrito:", itemToAdd);
     addToCart(itemToAdd, quantity);
-    alert(
-      `${product.nombre} (${selectedEnvase.tipo}, ${selectedEnvase.volumen}ml) agregado al carrito`
-    );
+    toast.success(`${product.nombre} (${selectedEnvase.tipo}, ${selectedEnvase.volumen}ml) agregado al carrito`);
   };
 
   const toggleSection = (section: string) => {

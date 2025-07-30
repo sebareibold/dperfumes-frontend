@@ -108,6 +108,17 @@ interface PerfumeCreateData {
   estado: boolean
 }
 
+// Mapeo de estados del frontend a estados del backend
+const STATUS_MAPPING: Record<string, string> = {
+  "pendiente_manual": "pending_manual",
+  "pendiente_comprobante_transferencia": "pending_transfer_proof",
+  "pendiente_confirmacion_transferencia": "pending_transfer_confirmation",
+  "pagado": "paid",
+  "cancelado": "cancelled",
+  "reembolsado": "refunded",
+  "confirmado": "confirmado"
+};
+
 export const apiService = {
   // Limpiar todo el caché
   clearCache: () => {
@@ -435,7 +446,11 @@ export const apiService = {
 
   updateOrderStatus: async (id: string, status: string, adminNotes: string) => {
     try {
-      const response = (await apiService.put(`/orders/${id}/status`, { status, adminNotes })) as any
+      // Mapear el estado del frontend al estado del backend
+      const backendStatus = STATUS_MAPPING[status] || status;
+      console.log(`Mapeando estado: ${status} -> ${backendStatus}`);
+      
+      const response = (await apiService.put(`/orders/${id}/status`, { status: backendStatus, adminNotes })) as any
       return { success: true, order: response.order }
     } catch (error: unknown) {
       return {
@@ -554,7 +569,7 @@ export const apiService = {
       const formData = new FormData()
       formData.append("file", file)
 
-      const response = await axios.post(`${API_BASE_URL}/upload/transfer-proof`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/upload/proof`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

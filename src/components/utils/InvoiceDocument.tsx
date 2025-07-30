@@ -56,7 +56,7 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ company, client, invo
         <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 32 }}>
           <img src="/icono_logo.png" alt="Logo Daisy" style={{ height: 64, marginBottom: 0 }} />
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
           <img src="/text_logo.png" alt="Daisy Perfumes Artesanales" style={{ height: 48, marginBottom: 4 }} />
           <div style={{ fontSize: 18, color: grayDark, fontWeight: 400, marginBottom: 2 }}>Neuquén Capital</div>
           <div style={{ fontSize: 13, color: grayDark }}>{company.address}</div>

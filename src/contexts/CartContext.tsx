@@ -116,3 +116,8 @@ export const useCart = () => {
   return context
 }
 
+export const clearCartExternal = (setItems: React.Dispatch<React.SetStateAction<CartItem[]>>) => {
+  setItems([]);
+  localStorage.removeItem("cart");
+};
+
