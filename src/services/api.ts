@@ -1,7 +1,9 @@
 // Este archivo se comporta como un manager de la API, de tal manera que únicamente los subsistemas del front se comunican con él.
 import axios from "axios"
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://dperfumes-backend-production.up.railway.app/api"
+//const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+
 
 // Cache para las respuestas de la API
 const apiCache = new Map<string, { data: unknown; timestamp: number }>()
@@ -108,14 +110,14 @@ interface PerfumeCreateData {
   estado: boolean
 }
 
-// Mapeo de estados del frontend a estados del backend
+// Mapeo de estados del frontend a estados del backend (ahora unificado en español)
 const STATUS_MAPPING: Record<string, string> = {
-  "pendiente_manual": "pending_manual",
-  "pendiente_comprobante_transferencia": "pending_transfer_proof",
-  "pendiente_confirmacion_transferencia": "pending_transfer_confirmation",
-  "pagado": "paid",
-  "cancelado": "cancelled",
-  "reembolsado": "refunded",
+  "pendiente_manual": "pendiente_manual",
+  "pendiente_comprobante_transferencia": "pendiente_comprobante_transferencia",
+  "pendiente_confirmacion_transferencia": "pendiente_confirmacion_transferencia",
+  "pagado": "pagado",
+  "cancelado": "cancelado",
+  "reembolsado": "reembolsado",
   "confirmado": "confirmado"
 };
 
@@ -385,7 +387,7 @@ export const apiService = {
       return {
         success: false,
         error: axios.isAxiosError(error)
-          ? error.response?.data?.message || "Error al obtener perfumes más vistos"
+          ? error.response?.data?.message || "Error al obtener productos más vistos"
           : "Error desconocido",
         products: [],
       }
@@ -548,9 +550,27 @@ export const apiService = {
     }
   },
 
+  // Reset Interactions Endpoint
+  resetInteractions: async () => {
+    try {
+      console.log("🔄 Frontend - Llamando a resetInteractions...")
+      const response = (await apiService.del("/interactions/reset")) as any
+      console.log("✅ Frontend - Respuesta de resetInteractions:", response)
+      return { success: true, message: response.message || "Interacciones reseteadas exitosamente" }
+    } catch (error: unknown) {
+      console.error("❌ Frontend - Error en resetInteractions:", error)
+      return {
+        success: false,
+        error: axios.isAxiosError(error)
+          ? error.response?.data?.message || "Error al resetear interacciones"
+          : "Error desconocido",
+      }
+    }
+  },
+
   getMostViewedCategories: async (limit: number) => {
     try {
-      const response = (await apiService.get("/interactions/most-viewed-categories", { limit })) as any
+      const response = (await apiService.get("/products/most-viewed-categories", { limit })) as any
       return { success: true, categories: response.categories }
     } catch (error: unknown) {
       return {

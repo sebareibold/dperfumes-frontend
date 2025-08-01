@@ -1,0 +1,42 @@
+User-agent: *
+Allow: /
+
+# Permitir acceso a recursos estáticos
+Allow: /logo.png
+Allow: /icono_logo.png
+Allow: /flor.png
+Allow: /image.png
+Allow: /p2.jpg
+Allow: /pe.jpg
+Allow: /text_logo.png
+
+# Bloquear acceso a áreas administrativas
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/dashboard
+Disallow: /admin/products
+Disallow: /admin/orders
+Disallow: /admin/settings
+Disallow: /admin/content
+Disallow: /admin/envases
+
+# Bloquear archivos de configuración y desarrollo
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /.env
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /tsconfig.json
+Disallow: /vite.config.ts
+Disallow: /eslint.config.js
+
+# Bloquear archivos de documentación
+Disallow: /README.md
+Disallow: /CONFIGURACION-BACKEND.md
+Disallow: /DOCUMENTACION.md
+
+# Sitemap
+Sitemap: https://daisyperfumes.com/sitemap.xml
+
+# Crawl-delay para ser respetuoso con el servidor
+Crawl-delay: 1 

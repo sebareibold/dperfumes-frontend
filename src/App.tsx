@@ -5,6 +5,7 @@ import PublicLayout from "./layouts/PublicLayout"
 import AdminLayout from "./layouts/AdminLayout"
 import ProtectedRoute from "./components/admin/ProtectedRoute"
 import ScrollToTop from "./components/utils/ScrollToTop"
+import { Toaster } from "react-hot-toast"
 
 // Public pages
 import HomePage from "./pages/public/HomePage"
@@ -27,6 +28,7 @@ import AdminContent from "./pages/admin/AdminContent"
 import AdminEnvases from "./pages/admin/AdminEnvases"
 
 import "./App.css"
+import "./styles/toast-custom.css"
 
 function App() {
   return (
@@ -34,6 +36,33 @@ function App() {
       <CartProvider>
         <Router>
           <ScrollToTop />
+          <Toaster 
+            position="top-center"
+            containerStyle={{ top: 80 }}
+            toastOptions={{
+              duration: 1500,
+              style: {
+                background: '#1f2937',
+                color: '#f9fafb',
+                border: '1px solid #374151',
+                animation: 'none',
+              },
+              success: {
+                style: {
+                  background: '#065f46',
+                  border: '1px solid #10b981',
+                },
+              },
+              error: {
+                style: {
+                  background: '#991b1b',
+                  border: '1px solid #ef4444',
+                },
+              },
+            }}
+            gutter={8}
+            reverseOrder={false}
+          />
           <Routes>
             {/* Rutas Públicas */}
             <Route path="/" element={<PublicLayout />}>
@@ -44,6 +73,7 @@ function App() {
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="order-confirmation/:orderNumber" element={<OrderConfirmationPage />} />
               <Route path="track-order" element={<OrderTrackingPage />} />
+              <Route path="order-tracking/:orderNumber" element={<OrderTrackingPage />} />
             </Route>
 
             {/* Ruta de Login Admin (fuera del layout protegido) */}

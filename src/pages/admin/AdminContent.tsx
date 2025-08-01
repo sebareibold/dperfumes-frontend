@@ -275,11 +275,12 @@ interface ContentData {
     slogan: string;
     buttonText: string;
     buttonLink: string;
-    heroImage: {
+    heroImages: {
       url: string;
       alt: string;
       filename: string;
-    };
+      position: string;
+    }[];
   };
   productCatalog: {
     mainTitle: string;
@@ -530,12 +531,20 @@ export default function AdminContent() {
             slogan: contentData.hero?.slogan || "",
             buttonText: contentData.hero?.buttonText || "Ver Productos",
             buttonLink: contentData.hero?.buttonLink || "products",
-            heroImage: {
-              url: contentData.hero?.heroImage?.url || "/presentacion_1.jpeg",
-              alt: contentData.hero?.heroImage?.alt || "Imagen principal",
-              filename:
-                contentData.hero?.heroImage?.filename || "presentacion_1.jpeg",
-            },
+            heroImages: contentData.hero?.heroImages || [
+              {
+                url: "/p2.jpg",
+                alt: "Perfume elegante principal",
+                filename: "p2.jpg",
+                position: "primary",
+              },
+              {
+                url: "/pe.jpg",
+                alt: "Perfume elegante secundario",
+                filename: "pe.jpg",
+                position: "secondary",
+              },
+            ],
           },
           productCatalog: {
             mainTitle:
@@ -1060,13 +1069,55 @@ export default function AdminContent() {
       return;
     }
 
+    // --- ARREGLO: asegurar que heroImages tenga ambas posiciones ---
+    let heroImages = content.hero.heroImages;
+    // Si falta alguna posición, la agregamos con valores por defecto
+    const hasPrimary = heroImages.some(img => img.position === "primary");
+    const hasSecondary = heroImages.some(img => img.position === "secondary");
+    if (!hasPrimary) {
+      heroImages = [
+        ...heroImages,
+        {
+          url: "/p2.jpg",
+          alt: "Perfume elegante principal",
+          filename: "p2.jpg",
+          position: "primary",
+        },
+      ];
+    }
+    if (!hasSecondary) {
+      heroImages = [
+        ...heroImages,
+        {
+          url: "/pe.jpg",
+          alt: "Perfume elegante secundario",
+          filename: "pe.jpg",
+          position: "secondary",
+        },
+      ];
+    }
+    // Ordenar para que siempre sea [primary, secondary]
+    heroImages = [
+      ...heroImages.filter(img => img.position === "primary"),
+      ...heroImages.filter(img => img.position === "secondary"),
+    ];
+
+    const contentToSave = {
+      ...content,
+      hero: {
+        ...content.hero,
+        heroImages,
+      },
+    };
+    // --- FIN ARREGLO ---
+
     setSaving(true);
     setError(null);
     setSuccess(null);
 
     try {
-      console.log("Enviando contenido:", content);
-      const response = await apiService.updateSiteContent(content);
+      console.log("Enviando contenido:", contentToSave);
+      const response = await apiService.updateSiteContent(contentToSave);
       console.log("Respuesta del servidor:", response);
 
       if (response.success) {
@@ -1302,17 +1353,21 @@ export default function AdminContent() {
                   </div>
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Imagen Principal del Hero
+                      Imágenes del Hero
                     </label>
+                    <div className="space-y-6">
+                      {/* Imagen Principal */}
+                      <div className="border border-gray-600/30 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-gray-300 mb-3">Imagen Principal</h4>
                     <div className="space-y-4">
-                      {/* Vista previa de la imagen actual */}
-                      {content?.hero.heroImage?.url && (
+                          {/* Vista previa de la imagen principal */}
+                          {content?.hero.heroImages?.find(img => img.position === "primary")?.url && (
                         <div className="relative">
                           <img
                             src={
-                              content.hero.heroImage.url || "/placeholder.svg"
+                                  content.hero.heroImages.find(img => img.position === "primary")?.url || "/placeholder.svg"
                             }
-                            alt={content.hero.heroImage.alt || "Vista previa"}
+                                alt={content.hero.heroImages.find(img => img.position === "primary")?.alt || "Vista previa"}
                             className="w-full h-48 object-cover rounded-lg border border-gray-600/50"
                           />
                           <div className="absolute top-2 right-2">
@@ -1320,15 +1375,16 @@ export default function AdminContent() {
                               type="button"
                               onClick={() => {
                                 if (content) {
+                                      const updatedImages = content.hero.heroImages.map(img => 
+                                        img.position === "primary" 
+                                          ? { ...img, url: "/p2.jpg", alt: "Perfume elegante principal", filename: "p2.jpg" }
+                                          : img
+                                      );
                                   setContent({
                                     ...content,
                                     hero: {
                                       ...content.hero,
-                                      heroImage: {
-                                        url: "/presentacion_1.jpeg",
-                                        alt: "Mujer elegante con lencería",
-                                        filename: "presentacion_1.jpeg",
-                                      },
+                                          heroImages: updatedImages,
                                     },
                                   });
                                 }
@@ -1342,11 +1398,11 @@ export default function AdminContent() {
                         </div>
                       )}
 
-                      {/* Input para subir nueva imagen */}
+                          {/* Input para subir nueva imagen principal */}
                       <div>
                         <input
                           type="file"
-                          id="heroImageUpload"
+                              id="heroImagePrimaryUpload"
                           accept="image/*"
                           className="hidden"
                           onChange={async (e) => {
@@ -1359,63 +1415,209 @@ export default function AdminContent() {
 
                               // Validar archivo
                               if (file.size > 5 * 1024 * 1024) {
-                                setError(
-                                  "La imagen es demasiado grande. Máximo 5MB."
-                                );
+                                    setError("La imagen es demasiado grande. Máximo 5MB.");
                                 return;
                               }
 
-                              const validTypes = [
-                                "image/jpeg",
-                                "image/jpg",
-                                "image/png",
-                                "image/webp",
-                              ];
+                                  const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
                               if (!validTypes.includes(file.type)) {
-                                setError(
-                                  "Tipo de archivo no válido. Solo JPG, PNG y WEBP."
-                                );
+                                    setError("Tipo de archivo no válido. Solo JPG, PNG y WEBP.");
                                 return;
                               }
 
                               // Subir imagen
-                              const uploadResult =
-                                await apiService.uploadTransferProof(file);
+                                  const uploadResult = await apiService.uploadTransferProof(file);
 
                               if (uploadResult.success && uploadResult.url) {
                                 // Actualizar el contenido con la nueva imagen
                                 if (content) {
+                                      const updatedImages = content.hero.heroImages.map(img => 
+                                        img.position === "primary" 
+                                          ? {
+                                              ...img,
+                                              url: uploadResult.url,
+                                              alt: img.alt || "Imagen principal",
+                                              filename: uploadResult.filename || file.name,
+                                            }
+                                          : img
+                                      );
                                   setContent({
                                     ...content,
                                     hero: {
                                       ...content.hero,
-                                      heroImage: {
-                                        url: uploadResult.url,
-                                        alt:
-                                          content.hero.heroImage?.alt ||
-                                          "Imagen principal",
-                                        filename:
-                                          uploadResult.filename || file.name,
-                                      },
+                                          heroImages: updatedImages,
                                     },
                                   });
                                 }
-                                setSuccess("Imagen subida exitosamente!");
+                                    setSuccess("Imagen principal subida exitosamente!");
                                 setTimeout(() => setSuccess(null), 3000);
                               } else {
-                                setError(
-                                  uploadResult.error ||
-                                    "Error al subir la imagen"
-                                );
+                                    setError(uploadResult.error || "Error al subir la imagen");
                               }
                             } catch (error) {
-                              console.error(
-                                "Error uploading hero image:",
-                                error
-                              );
-                              setError(
-                                "Error al subir la imagen. Intenta nuevamente."
-                              );
+                                  console.error("Error uploading hero image:", error);
+                                  setError("Error al subir la imagen. Intenta nuevamente.");
+                                } finally {
+                                  setSaving(false);
+                                }
+                              }}
+                            />
+
+                            <div className="flex gap-4">
+                              <button
+                                type="button"
+                                onClick={() => document.getElementById("heroImagePrimaryUpload")?.click()}
+                                disabled={saving}
+                                className="flex-1 px-4 py-3 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-lg hover:bg-blue-600/30 transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                              >
+                                {saving ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Subiendo...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Cambiar Imagen Principal
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Campo para texto alternativo de imagen principal */}
+                          <div>
+                            <label htmlFor="heroImagePrimaryAlt" className="block text-sm font-medium text-gray-300 mb-2">
+                              Texto Alternativo (Alt)
+                            </label>
+                            <input
+                              type="text"
+                              id="heroImagePrimaryAlt"
+                              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              value={content?.hero.heroImages?.find(img => img.position === "primary")?.alt || ""}
+                              onChange={(e) => {
+                                if (content) {
+                                  const updatedImages = content.hero.heroImages.map(img => 
+                                    img.position === "primary" 
+                                      ? { ...img, alt: e.target.value }
+                                      : img
+                                  );
+                                  setContent({
+                                    ...content,
+                                    hero: {
+                                      ...content.hero,
+                                      heroImages: updatedImages,
+                                    },
+                                  });
+                                }
+                              }}
+                              placeholder="Descripción de la imagen principal para accesibilidad..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Imagen Secundaria */}
+                      <div className="border border-gray-600/30 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-gray-300 mb-3">Imagen Secundaria</h4>
+                        <div className="space-y-4">
+                          {/* Vista previa de la imagen secundaria */}
+                          {content?.hero.heroImages?.find(img => img.position === "secondary")?.url && (
+                            <div className="relative">
+                              <img
+                                src={
+                                  content.hero.heroImages.find(img => img.position === "secondary")?.url || "/placeholder.svg"
+                                }
+                                alt={content.hero.heroImages.find(img => img.position === "secondary")?.alt || "Vista previa"}
+                                className="w-full h-48 object-cover rounded-lg border border-gray-600/50"
+                              />
+                              <div className="absolute top-2 right-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (content) {
+                                      const updatedImages = content.hero.heroImages.map(img => 
+                                        img.position === "secondary" 
+                                          ? { ...img, url: "/pe.jpg", alt: "Perfume elegante secundario", filename: "pe.jpg" }
+                                          : img
+                                      );
+                                      setContent({
+                                        ...content,
+                                        hero: {
+                                          ...content.hero,
+                                          heroImages: updatedImages,
+                                        },
+                                      });
+                                    }
+                                  }}
+                                  className="p-2 bg-red-600/20 text-red-400 border border-red-600/30 rounded-lg hover:bg-red-600/30 transition-all duration-200"
+                                  title="Restaurar imagen por defecto"
+                                >
+                                  <RefreshCw className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Input para subir nueva imagen secundaria */}
+                          <div>
+                            <input
+                              type="file"
+                              id="heroImageSecondaryUpload"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                try {
+                                  setSaving(true);
+                                  setError(null);
+
+                                  // Validar archivo
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    setError("La imagen es demasiado grande. Máximo 5MB.");
+                                    return;
+                                  }
+
+                                  const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+                                  if (!validTypes.includes(file.type)) {
+                                    setError("Tipo de archivo no válido. Solo JPG, PNG y WEBP.");
+                                    return;
+                                  }
+
+                                  // Subir imagen
+                                  const uploadResult = await apiService.uploadTransferProof(file);
+
+                                  if (uploadResult.success && uploadResult.url) {
+                                    // Actualizar el contenido con la nueva imagen
+                                    if (content) {
+                                      const updatedImages = content.hero.heroImages.map(img => 
+                                        img.position === "secondary" 
+                                          ? {
+                                              ...img,
+                                              url: uploadResult.url,
+                                              alt: img.alt || "Imagen secundaria",
+                                              filename: uploadResult.filename || file.name,
+                                            }
+                                          : img
+                                      );
+                                      setContent({
+                                        ...content,
+                                        hero: {
+                                          ...content.hero,
+                                          heroImages: updatedImages,
+                                        },
+                                      });
+                                    }
+                                    setSuccess("Imagen secundaria subida exitosamente!");
+                                    setTimeout(() => setSuccess(null), 3000);
+                                  } else {
+                                    setError(uploadResult.error || "Error al subir la imagen");
+                                  }
+                                } catch (error) {
+                                  console.error("Error uploading hero image:", error);
+                                  setError("Error al subir la imagen. Intenta nuevamente.");
                             } finally {
                               setSaving(false);
                             }
@@ -1425,11 +1627,7 @@ export default function AdminContent() {
                         <div className="flex gap-4">
                           <button
                             type="button"
-                            onClick={() =>
-                              document
-                                .getElementById("heroImageUpload")
-                                ?.click()
-                            }
+                                onClick={() => document.getElementById("heroImageSecondaryUpload")?.click()}
                             disabled={saving}
                             className="flex-1 px-4 py-3 bg-blue-600/20 text-blue-400 border border-blue-600/30 rounded-lg hover:bg-blue-600/30 transition-all duration-200 flex items-center justify-center disabled:opacity-50"
                           >
@@ -1441,42 +1639,43 @@ export default function AdminContent() {
                             ) : (
                               <>
                                 <Upload className="h-4 w-4 mr-2" />
-                                Cambiar Imagen
+                                    Cambiar Imagen Secundaria
                               </>
                             )}
                           </button>
                         </div>
                       </div>
 
-                      {/* Campo para texto alternativo */}
+                          {/* Campo para texto alternativo de imagen secundaria */}
                       <div>
-                        <label
-                          htmlFor="heroImageAlt"
-                          className="block text-sm font-medium text-gray-300 mb-2"
-                        >
+                            <label htmlFor="heroImageSecondaryAlt" className="block text-sm font-medium text-gray-300 mb-2">
                           Texto Alternativo (Alt)
                         </label>
                         <input
                           type="text"
-                          id="heroImageAlt"
+                              id="heroImageSecondaryAlt"
                           className="w-full px-4 py-3 bg-gray-900/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                          value={content?.hero.heroImage?.alt || ""}
+                              value={content?.hero.heroImages?.find(img => img.position === "secondary")?.alt || ""}
                           onChange={(e) => {
                             if (content) {
+                                  const updatedImages = content.hero.heroImages.map(img => 
+                                    img.position === "secondary" 
+                                      ? { ...img, alt: e.target.value }
+                                      : img
+                                  );
                               setContent({
                                 ...content,
                                 hero: {
                                   ...content.hero,
-                                  heroImage: {
-                                    ...content.hero.heroImage,
-                                    alt: e.target.value,
-                                  },
+                                      heroImages: updatedImages,
                                 },
                               });
                             }
                           }}
-                          placeholder="Descripción de la imagen para accesibilidad..."
+                              placeholder="Descripción de la imagen secundaria para accesibilidad..."
                         />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -39,11 +39,12 @@ interface HeroContent {
   slogan: string
   buttonText: string
   buttonLink: string
-  heroImage?: {
+  heroImages?: {
     url: string
     alt: string
     filename: string
-  }
+    position: string
+  }[]
 }
 
 interface HeroSectionProps {
@@ -156,8 +157,8 @@ export default function HeroSection({ content }: HeroSectionProps) {
             <div className="relative group w-40 sm:w-32 md:w-48 lg:w-64 flex-shrink-0">
               <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-gray-100 to-white rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <img
-                src="/p2.jpg"
-                alt={content.heroImage?.alt || "Perfume elegante"}
+                src={content.heroImages?.find(img => img.position === 'primary')?.url || "/p2.jpg"}
+                alt={content.heroImages?.find(img => img.position === 'primary')?.alt || "Perfume elegante"}
                 className="hero-image-primary relative w-full h-auto object-contain rounded-xl shadow-2xl border border-gray-200 bg-white z-20 transform group-hover:scale-105 group-hover:-rotate-2 transition-all duration-500 ease-out hover:shadow-3xl"
                 style={{
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
@@ -169,8 +170,8 @@ export default function HeroSection({ content }: HeroSectionProps) {
             <div className="relative group w-28 sm:w-24 md:w-36 lg:w-48 flex-shrink-0">
               <div className="absolute -inset-1.5 sm:-inset-3 bg-gradient-to-r from-white to-gray-100 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <img
-                src="/pe.jpg"
-                alt="Perfume 2"
+                src={content.heroImages?.find(img => img.position === 'secondary')?.url || "/pe.jpg"}
+                alt={content.heroImages?.find(img => img.position === 'secondary')?.alt || "Perfume 2"}
                 className="hero-image-secondary relative w-full h-auto object-contain rounded-lg shadow-xl border border-gray-200 bg-white z-10 transform group-hover:scale-105 group-hover:rotate-2 transition-all duration-500 ease-out hover:shadow-2xl"
                 style={{
                   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'

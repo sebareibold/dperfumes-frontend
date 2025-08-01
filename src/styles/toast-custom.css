@@ -1,0 +1,25 @@
+/* Animaciones personalizadas para toast - solo fade */
+.toast-exit {
+  opacity: 0 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.toast-enter {
+  opacity: 0 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.toast-enter-active {
+  opacity: 1 !important;
+}
+
+/* Forzar que no haya movimiento */
+[data-testid="toast"] {
+  transform: none !important;
+  animation: none !important;
+}
+
+.toast {
+  animation: none !important;
+  transform: none !important;
+} 

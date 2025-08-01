@@ -29,6 +29,7 @@ export default function OrderConfirmationPage() {
   const [error, setError] = useState<string | null>(null)
   const [showInvoice, setShowInvoice] = useState(false);
   const invoiceRef = React.useRef<HTMLDivElement>(null);
+  const [contactPhone, setContactPhone] = useState<string | null>(null);
 
   const orderData = location.state?.order
   const wantsShipping = location.state?.wantsShipping
@@ -94,6 +95,31 @@ export default function OrderConfirmationPage() {
     }
   }, [orderData, paramOrderNumber, navigate]);
 
+  // Cargar información de contacto
+  useEffect(() => {
+    async function fetchContactPhone() {
+      try {
+        const response = await apiService.getSiteContent();
+        if (response.success && response.content?.contact?.contactInfo) {
+          const contactInfo = response.content.contact.contactInfo;
+          // Buscar por 'Whatsapp'
+          const whatsappInfo = contactInfo.find((info: { title: string; details: string[] }) =>
+            info.title.toLowerCase() === "whatsapp"
+          );
+          if (whatsappInfo && Array.isArray(whatsappInfo.details) && whatsappInfo.details[0]) {
+            // Clean up the phone number for WhatsApp (remove spaces, dashes, etc)
+            const raw = whatsappInfo.details[0];
+            const cleaned = raw.replace(/[^\d+]/g, "");
+            setContactPhone(cleaned);
+          }
+        }
+      } catch {
+        setContactPhone(null);
+      }
+    }
+    fetchContactPhone();
+  }, []);
+
   const copyOrderNumber = () => {
     if (numeroOrden) {
       navigator.clipboard.writeText(numeroOrden)
@@ -121,8 +147,12 @@ export default function OrderConfirmationPage() {
   };
 
   const handleWhatsAppContact = () => {
+    if (!contactPhone) {
+      alert("WhatsApp no disponible en este momento. Por favor, contacta por otros medios.");
+      return;
+    }
     const message = `Hola! Acabo de realizar la orden #${numeroOrden}. Me gustaría confirmar los detalles y coordinar ${wantsShipping ? "el envío" : "el punto de encuentro"}.`
-    const whatsappUrl = `https://wa.me/5492995123456?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${contactPhone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, "_blank")
   }
 
@@ -146,8 +176,9 @@ export default function OrderConfirmationPage() {
   const invoiceItems: InvoiceItem[] = items.map((item: any) => ({
     description: item.titulo || item.descripcion || item.nombre || 'Producto',
     quantity: item.cantidad || item.quantity || 1,
-    unitPrice: item.precio || item.price || 0,
-    total: (item.precio || item.price || 0) * (item.cantidad || item.quantity || 1),
+    unitPrice: item.precio || item.price || (item.volumen?.precio ?? 0),
+    total: ((item.precio || item.price || (item.volumen?.precio ?? 0)) * (item.cantidad || item.quantity || 1)),
+    volumenMl: item.volumen?.ml ? Number(item.volumen.ml) : undefined,
   }));
   const invoice = {
     number: numeroOrden,
@@ -559,6 +590,8 @@ export default function OrderConfirmationPage() {
               invoice={{
                 number: numeroOrden,
                 date: new Date(createdAt || Date.now()).toLocaleDateString('es-AR'),
+                status: estado,
+                paymentMethod: metodoPago,
                 items: (items as Array<{ nombre: string; volumen?: { ml?: string; precio?: number }; tipo?: string; cantidad: number; imagen?: string }> | undefined)?.map((item) => ({
                   description: `${item.nombre} ${item.volumen?.ml ? `- ${item.volumen.ml}` : ''} ${item.tipo ? `- ${item.tipo}` : ''}`.trim(),
                   quantity: item.cantidad,

@@ -24,12 +24,13 @@ export interface Order {
   shippingCost: number
   total: number
   status:
-    | "pending_manual"
-    | "pending_transfer_proof"
-    | "pending_transfer_confirmation"
-    | "paid"
-    | "cancelled"
-    | "refunded"
+    | "pendiente_manual"
+    | "pendiente_comprobante_transferencia"
+    | "pendiente_confirmacion_transferencia"
+    | "pagado"
+    | "cancelado"
+    | "reembolsado"
+    | "confirmado"
   notes?: string
   adminNotes?: string
   createdAt: string

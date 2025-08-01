@@ -13,10 +13,12 @@ import {
   ChevronDown,
   ChevronUp,
   MessageCircle,
+  RotateCcw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiService } from "../../services/api";
 import type { Order } from "../../types/Order"; // Declare the Order variable
+import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function AdminDashboard() {
       const ordersArray: Order[] = orders.orders || [];
       const totalOrders = ordersArray.length;
       const totalRevenue = ordersArray
-        .filter((order: Order) => order.status === "paid")
+        .filter((order: Order) => order.status === "pagado")
         .reduce((sum: number, order: Order) => sum + (order.total || 0), 0);
 
       console.log("📈 Estadísticas calculadas:", {
@@ -198,6 +200,7 @@ export default function AdminDashboard() {
       const processedMostViewedProducts = (
         mostViewedProducts.products || []
       ).map((product: any) => {
+        console.log("🔍 Producto más visto:", product);
         return {
           ...product,
           displayName:
@@ -210,6 +213,8 @@ export default function AdminDashboard() {
             product.productCategory || product.category || "Sin categoría",
         };
       });
+
+      console.log("📊 Productos más vistos procesados:", processedMostViewedProducts);
 
       // Categorías más visitadas
       const processedMostVisitedCategories =
@@ -238,6 +243,7 @@ export default function AdminDashboard() {
       console.log("✅ Carga del dashboard completada");
     }
   };
+
 
   const stats = [
     {
@@ -290,6 +296,28 @@ export default function AdminDashboard() {
       textColor: "text-amber-300",
       link: "#",
       change: "",
+      action: async () => {
+        if (confirm("¿Estás seguro de que quieres resetear todas las interacciones? Esta acción no se puede deshacer.")) {
+          try {
+            const response = await apiService.resetInteractions();
+            if (response.success) {
+              toast.success("Interacciones reseteadas exitosamente");
+              
+              // Limpiar caché específico de productos más vistos
+              apiService.clearCache();
+              
+              // Recargar datos del dashboard
+              loadDashboardData();
+            } else {
+              toast.error(response.error || "Error al resetear interacciones");
+            }
+          } catch (error) {
+            toast.error("Error al resetear interacciones");
+          }
+        }
+      },
+      actionIcon: RotateCcw,
+      actionText: "Resetear",
     },
   ];
 
@@ -343,46 +371,51 @@ export default function AdminDashboard() {
       </div>
 
       {/* Estadísticas Principales con Gradientes */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-6">
-        {stats.map((stat) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
           <Link
+            key={index}
             to={stat.link}
-            key={stat.name}
-            className={`${stat.gradient} border ${stat.border} rounded-xl p-3 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group`}
+            className={`${stat.gradient} ${stat.border} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div
-                  className={`p-2 sm:p-3 ${stat.iconBg} border rounded-xl mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300`}
+              <div>
+                <p className="text-sm font-medium text-gray-400 mb-1">
+                  {stat.name}
+                </p>
+                <p
+                  className={`text-2xl font-bold ${stat.textColor} ${
+                    stat.valueClassName || ""
+                  }`}
                 >
-                  <stat.icon
-                    className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.textColor}`}
-                  />
-                </div>
-                <div>
-                  <div
-                    className={`${
-                      stat.valueClassName || "text-2xl sm:text-3xl"
-                    } font-bold text-white ${
-                      loading ? "admin-animate-pulse" : ""
-                    }`}
-                  >
-                    {stat.value}
-                  </div>
-                  <div
-                    className={`text-xs sm:text-sm font-medium ${stat.textColor}`}
-                  >
-                    {stat.name}
-                  </div>
-                </div>
+                  {stat.value}
+                </p>
+                {stat.change && (
+                  <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
+                )}
               </div>
-              <div className="text-xs text-green-400 font-medium">
-                {stat.change}
+              <div className={`${stat.iconBg} rounded-lg p-3`}>
+                <stat.icon className="h-6 w-6 text-white" />
               </div>
             </div>
+            {stat.action && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  stat.action?.();
+                }}
+                className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-amber-600/20 text-amber-400 border border-amber-600/30 rounded-lg hover:bg-amber-600/30 transition-all duration-200 text-sm font-medium"
+              >
+                <stat.actionIcon className="h-4 w-4" />
+                {stat.actionText}
+              </button>
+            )}
           </Link>
         ))}
       </div>
+
+      
 
       {/* Productos Más Vistos con Gradiente */}
       <div className="bg-gradient-to-br from-green-900/20 via-green-800/10 to-green-700/5 border border-green-600/30 rounded-xl p-6 shadow-lg">
@@ -615,15 +648,15 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-2 gap-2">
                       {/* Columna izquierda: Id, Cliente, Precio */}
                       <div className="flex flex-col items-start gap-0.5">
-                        <div className="text-[11px] text-blue-300 font-semibold">#{order.orderNumber}</div>
-                        <div className="text-sm text-white font-bold truncate">{order.shippingInfo?.fullName || "Cliente"}</div>
+                        <div className="text-[11px] text-blue-300 font-semibold">#{order.numeroOrden}</div>
+                        <div className="text-sm text-white font-bold truncate">{order.infoEnvio?.nombreCompleto || "Cliente"}</div>
                         <div className="text-[11px] text-blue-200 font-semibold">${order.total?.toLocaleString()}</div>
                       </div>
                       {/* Columna derecha: Botón WhatsApp */}
                       <div className="flex items-start justify-end ">
-                        {order.shippingInfo?.phone && (
+                        {order.infoEnvio?.telefono && (
                           <a
-                            href={`https://wa.me/${order.shippingInfo.phone}?text=Hola%20${encodeURIComponent(order.shippingInfo.fullName || '')},%20te%20contactamos%20por%20tu%20pedido%20%23${order.orderNumber}`}
+                            href={`https://wa.me/${order.infoEnvio.telefono}?text=Hola%20${encodeURIComponent(order.infoEnvio.nombreCompleto || '')},%20te%20contactamos%20por%20tu%20pedido%20%23${order.numeroOrden}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex flex-row items-center   grid-cols-2 justify-center py-3  gap-0.5 bg-gradient-to-br from-green-800/40 via-green-600/30 to-green-400/20 border border-green-500/40 rounded-md px-0.5  text-white font-bold text-[9px] shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400/60 max-w-[120px]"
@@ -638,23 +671,23 @@ export default function AdminDashboard() {
                     </div>
                     {/* Estado debajo, ocupando todo el ancho */}
                     <div className="mt-2">
-                      <span className="admin-badge px-2 py-0.5 text-[9px] max-w-full whitespace-pre-line break-words rounded-md block w-full text-center">{getStatusBadge(order.status)}</span>
+                      <span className="admin-badge px-2 py-0.5 text-[9px] max-w-full whitespace-pre-line break-words rounded-md block w-full text-center">{getStatusBadge(order.estado)}</span>
                     </div>
                   </div>
                   {/* Desktop: tres columnas separadas */}
                   <div className="hidden lg:flex flex-col justify-center items-start mb-2 lg:mb-0 lg:w-1/3 lg:px-4">
-                    <div className="text-xs text-blue-300 font-semibold mb-1">#{order.orderNumber}</div>
-                    <div className="text-base text-white font-bold mb-1 truncate">{order.shippingInfo?.fullName || "Cliente"}</div>
+                    <div className="text-xs text-blue-300 font-semibold mb-1">#{order.numeroOrden}</div>
+                    <div className="text-base text-white font-bold mb-1 truncate">{order.infoEnvio?.nombreCompleto || "Cliente"}</div>
                   </div>
                   <div className="hidden lg:flex flex-col justify-center items-end lg:w-1/3 lg:px-4">
-                    <div className="mb-1">{getStatusBadge(order.status)}</div>
+                    <div className="mb-1">{getStatusBadge(order.estado)}</div>
                     <div className="text-sm text-blue-200 font-semibold">${order.total?.toLocaleString()}</div>
                   </div>
                   <div className="hidden lg:flex justify-end items-center lg:w-1/3 lg:px-4">
-                    {order.shippingInfo?.phone && (
+                    {order.infoEnvio?.telefono && (
                       <div className="rounded-2xl flex items-center w-full lg:justify-end">
                         <a
-                          href={`https://wa.me/${order.shippingInfo.phone}?text=Hola%20${encodeURIComponent(order.shippingInfo.fullName || '')},%20te%20contactamos%20por%20tu%20pedido%20%23${order.orderNumber}`}
+                          href={`https://wa.me/${order.infoEnvio.telefono}?text=Hola%20${encodeURIComponent(order.infoEnvio.nombreCompleto || '')},%20te%20contactamos%20por%20tu%20pedido%20%23${order.numeroOrden}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex flex-row items-center justify-center gap-x-3 bg-gradient-to-br from-green-800/40 via-green-600/30 to-green-400/20 border border-green-500/40 rounded-xl px-4 py-2 text-white font-bold text-xs shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400/60"

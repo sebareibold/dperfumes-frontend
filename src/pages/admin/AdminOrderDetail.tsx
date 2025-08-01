@@ -25,6 +25,7 @@ import {
   ImageIcon,
 } from "lucide-react"
 import { apiService } from "../../services/api"
+import toast from "react-hot-toast"
 
 interface Order {
   _id: string
@@ -148,19 +149,13 @@ export default function AdminOrderDetail() {
 
       if (response.success) {
         setOrder(response.order)
-
-
-        const successDiv = document.createElement("div")
-        successDiv.className = "fixed top-4 right-4 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg z-50"
-        successDiv.textContent = "Orden actualizada exitosamente!"
-        document.body.appendChild(successDiv)
-        setTimeout(() => document.body.removeChild(successDiv), 3000)
+        toast.success("Orden actualizada exitosamente")
       } else {
         throw new Error(response.error || "Error actualizando la orden")
       }
     } catch (err: unknown) {
       console.error("Error updating order:", err)
-      alert(`Error actualizando la orden: ${err instanceof Error ? err.message : "Error desconocido"}`) // Narrow type
+      toast.error(`Error actualizando la orden: ${err instanceof Error ? err.message : "Error desconocido"}`)
     } finally {
       setUpdating(false)
     }
@@ -243,12 +238,12 @@ export default function AdminOrderDetail() {
 
   // Definir los estados válidos como constante
   const VALID_ORDER_STATUSES = [
-    "pending_manual",
-    "pending_transfer_proof",
-    "pending_transfer_confirmation",
-    "paid",
-    "cancelled",
-    "refunded",
+    "pendiente_manual",
+    "pendiente_comprobante_transferencia",
+    "pendiente_confirmacion_transferencia",
+    "pagado",
+    "cancelado",
+    "reembolsado",
     "confirmado"
   ] as const;
   type OrderStatus = typeof VALID_ORDER_STATUSES[number];
@@ -659,12 +654,13 @@ export default function AdminOrderDetail() {
                 >
                 
                   <option value="" disabled>Selecciona un estado...</option>
-                  <option value="pending_manual">Pendiente (Efectivo)</option>
-                  <option value="pending_transfer_proof">Pendiente (Falta Comprobante)</option>
-                  <option value="pending_transfer_confirmation">Pendiente (Verificar Comprobante)</option>
-                  <option value="paid">Pagado</option>
-                  <option value="cancelled">Cancelado</option>
-                  <option value="refunded">Reembolsado</option>
+                                                    <option value="pendiente_manual">Pendiente (Efectivo)</option>
+                  <option value="pendiente_comprobante_transferencia">Pendiente (Falta Comprobante)</option>
+                  <option value="pendiente_confirmacion_transferencia">Pendiente (Verificar Comprobante)</option>
+                  <option value="pagado">Pagado</option>
+                  <option value="cancelado">Cancelado</option>
+                  <option value="reembolsado">Reembolsado</option>
+                  <option value="confirmado">Confirmado</option>
                 </select>
               </div>
 

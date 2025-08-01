@@ -14,6 +14,7 @@ interface CartItem {
   tipo: "vidrio" | "plastico"
   imagen: string
   cantidad: number
+  stock: number // <-- agregar stock
 }
 
 interface CartContextType {

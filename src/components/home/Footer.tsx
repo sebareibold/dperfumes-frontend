@@ -1,20 +1,35 @@
 import { Instagram, Facebook } from "lucide-react";
-import { Link } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 
 export default function Footer() {
+  const navigate = useNavigate();
+
+  // Función genérica para manejar scroll o navegación
+  function handleNavigate(sectionId: string, path = "/") {
+    if (window.location.pathname === path) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      sessionStorage.setItem("scrollToSection", sectionId);
+      navigate(path);
+    }
+  }
+
   return (
     <footer className="bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900 text-white py-8 md:py-12 border-t border-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Brand and Purpose */}
-          <div className="md:col-span-1 text-center md:text-left">
+          <div className="text-left">
             <h3 className="font-serif text-2xl font-bold tracking-wide mb-2">
-              Daisy <span className="font-light italic text-white">Perfumes</span>
+              Daisy <span className="font-light italic text-white">Perfumes Artesanales</span>
             </h3>
-            <p className="text-white/80 font-light mb-4 max-w-md mx-auto md:mx-0 leading-relaxed text-sm">
+            <p className="text-white/80 font-light mb-4 leading-relaxed text-sm max-w-xs">
               Fragancias modernas y elegantes para quienes buscan distinción y sofisticación en cada detalle.
             </p>
-            <div className="flex space-x-3 justify-center md:justify-start">
+            <div className="flex justify-start space-x-3">
               {[Instagram, Facebook].map((Icon, index) => (
                 <a
                   key={index}
@@ -27,8 +42,54 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Secciones de la página */}
+          <div className="text-left">
+            <h4 className="text-white font-semibold mb-2 uppercase text-sm tracking-wide">
+              Secciones de la página
+            </h4>
+            <ul className="space-y-1 text-sm">
+            
+              <li>
+                <button
+                  onClick={() => handleNavigate("products", "/")}
+                  className="text-white/80 hover:text-white transition duration-200 no-underline"
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                >
+                  Catálogo
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate("/track-order")}
+                  className="text-white/80 hover:text-white transition duration-200 no-underline"
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                >
+                  Seguimiento
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => handleNavigate("contact", "/")}
+                  className="text-white/80 hover:text-white transition duration-200 no-underline"
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                >
+                  Contacto
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="text-white/80 hover:text-white transition duration-200 no-underline"
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                >
+                  Panel de Administración
+                </button>
+              </li>
+            </ul>
+          </div>
+
           {/* Designer Info */}
-          <div className="md:col-span-1 text-center md:text-right mt-4 md:mt-0">
+          <div className="text-left">
             <div className="font-light text-sm text-white/80 space-y-1">
               <p className="text-xs text-white/50 uppercase tracking-wide">Desarrollado por</p>
               <p className="font-medium">Sebastián Alejandro Reibold</p>
@@ -36,15 +97,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
-      {/* Botón visible en todas las resoluciones para ir al backoffice */}
-      <div className="flex justify-center mt-4 mb-2">
-        <Link
-          to="/admin"
-          className="border-2 border-white text-white bg-transparent px-8 py-3 rounded-full font-sans text-xs uppercase tracking-widest font-normal transition-all duration-300 hover:bg-white hover:text-black focus:outline-none shadow-none hover:shadow-lg"
-        >
-          Ir al Backoffice
-        </Link>
       </div>
     </footer>
   );

@@ -96,6 +96,9 @@ export default function CheckoutPage() {
     "cash"
   );
   const [wantsShipping, setWantsShipping] = useState(false);
+  
+
+
   const [transferProof, setTransferProof] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<Partial<ShippingInfo>>({});
@@ -289,7 +292,7 @@ export default function CheckoutPage() {
 
       if (response.success) {
         clearCart();
-        toast.success("¡Compra realizada con éxito!", { duration: 4000 });
+        toast.success("¡Compra realizada con éxito!", { duration: 1500 });
         navigate(`/order-confirmation/${response.order.numeroOrden}`, {
           state: {
             order: response.order,
@@ -484,7 +487,8 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-                  {/* Envío a domicilio */}
+                  {/* Envío a domicilio - Solo mostrar si está habilitado */}
+                  {checkoutContent?.shipping?.enabled && checkoutContent?.shipping?.homeDelivery?.enabled && (
                   <div
                     className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all ${
                       wantsShipping ? "shadow-md" : "hover:shadow-md"
@@ -580,6 +584,7 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
 
@@ -1209,9 +1214,9 @@ export default function CheckoutPage() {
                     >
                       {wantsShipping
                         ? shouldHaveFreeShipping
-                          ? "Gratis"
+                          ? ""
                           : `$${shippingCost.toLocaleString()}`
-                        : "Gratis"}
+                        : ""}
                     </span>
                   </div>
 

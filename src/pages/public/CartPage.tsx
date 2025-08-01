@@ -36,7 +36,7 @@ export default function CartPage() {
           const contactInfo: ContactDetailContent[] =
             response.content.contact.contactInfo;
           const phoneInfo = contactInfo.find(
-            (info) => info.title === "Teléfono"
+            (info) => info.title.toLowerCase() === "whatsapp"
           );
           if (
             phoneInfo &&
@@ -216,12 +216,13 @@ export default function CartPage() {
                                 onClick={() =>
                                   updateQuantity(
                                     item.id,
-                                    item.cantidad + 1,
+                                    Math.min(item.cantidad + 1, item.stock),
                                     item.volumen,
                                     item.tipo
                                   )
                                 }
                                 className="p-2 rounded-lg bg-white border border-black/10 hover:bg-black hover:text-white transition-all shadow-sm text-black"
+                                disabled={item.cantidad >= item.stock}
                               >
                                 <Plus className="h-4 w-4" />
                               </button>

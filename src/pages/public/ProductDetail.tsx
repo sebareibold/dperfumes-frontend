@@ -122,6 +122,7 @@ export default function ProductDetail() {
   const [error, setError] = useState<string | null>(null);
   const [productDetailContent, setProductDetailContent] =
     useState<ProductDetailContent | null>(null);
+  const [contactPhone, setContactPhone] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -129,6 +130,31 @@ export default function ProductDetail() {
       loadProduct(id);
     }
   }, [id]);
+
+  // Cargar información de contacto
+  useEffect(() => {
+    async function fetchContactPhone() {
+      try {
+        const response = await apiService.getSiteContent();
+        if (response.success && response.content?.contact?.contactInfo) {
+          const contactInfo = response.content.contact.contactInfo;
+          // Buscar por 'Whatsapp'
+          const whatsappInfo = contactInfo.find((info: { title: string; details: string[] }) =>
+            info.title.toLowerCase() === "whatsapp"
+          );
+          if (whatsappInfo && Array.isArray(whatsappInfo.details) && whatsappInfo.details[0]) {
+            // Clean up the phone number for WhatsApp (remove spaces, dashes, etc)
+            const raw = whatsappInfo.details[0];
+            const cleaned = raw.replace(/[^\d+]/g, "");
+            setContactPhone(cleaned);
+          }
+        }
+      } catch {
+        setContactPhone(null);
+      }
+    }
+    fetchContactPhone();
+  }, []);
 
   const loadProductDetailContent = async () => {
     try {
@@ -249,10 +275,11 @@ export default function ProductDetail() {
       },
       tipo: selectedEnvase.tipo as 'vidrio' | 'plastico',
       imagen: product.imagenes[selectedImage],
+      stock: selectedEnvase.stock, // <-- agregar stock
     };
     console.log("[DEBUG] Item que se agrega al carrito:", itemToAdd);
     addToCart(itemToAdd, quantity);
-    toast.success(`${product.nombre} (${selectedEnvase.tipo}, ${selectedEnvase.volumen}ml) agregado al carrito`);
+    toast.success(`Agregado al carrito`);
   };
 
   const toggleSection = (section: string) => {
@@ -562,17 +589,19 @@ export default function ProductDetail() {
                   <span>Agregar al Carrito</span>
                 </button>
                 <a
-                  href={`https://wa.me/5492991234567?text=Hola!%20Quiero%20consultar%20por%20el%20perfume%20${encodeURIComponent(
+                  href={contactPhone ? `https://wa.me/${contactPhone}?text=Hola!%20Quiero%20consultar%20por%20el%20perfume%20${encodeURIComponent(
                     product?.nombre || ""
                   )}%20(${
                     selectedEnvase?.tipo === "vidrio" ? "Vidrio" : "Plástico"
-                  },%20${selectedEnvase?.volumen || ""}ml)`}
+                  },%20${selectedEnvase?.volumen || ""}ml)` : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-4 px-4 rounded-xl border-2 border-green-600 text-green-700 bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-green-600 hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-600/20 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group"
+                  className={`w-full py-4 px-4 rounded-xl border-2 border-green-600 text-green-700 bg-white/90 backdrop-blur-md font-sans text-sm font-semibold transition-all duration-300 hover:bg-green-600 hover:text-white hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-600/20 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group ${!contactPhone ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-disabled={!contactPhone}
+                  tabIndex={!contactPhone ? -1 : 0}
                 >
                   <MessageCircle className="h-5 w-5 group-hover:animate-pulse" />
-                  <span>Consultar por WhatsApp</span>
+                  <span>{contactPhone ? 'Consultar por WhatsApp' : 'WhatsApp no disponible'}</span>
                 </a>
               </div>
 

@@ -5,7 +5,6 @@ import { Outlet } from "react-router-dom";
 import { Suspense, useState, useCallback, useEffect } from "react";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import BackendStatus from "../components/admin/BackendStatus";
-import { Toaster } from "react-hot-toast";
 
 // Skeleton component for loading states
 const AdminPageSkeleton = () => (
@@ -74,12 +73,6 @@ const AdminLayout: React.FC = () => {
 
   return (
     <div className="admin-layout min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: { marginTop: 80, right: 20 }
-        }}
-      />
       <AdminSidebar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={handleSidebarToggle}

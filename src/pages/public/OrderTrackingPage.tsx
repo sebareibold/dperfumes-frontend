@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Search, MapPin, Truck, Info, XCircle, ArrowLeft, MessageSquare } from "lucide-react" // Mail is still imported but not used for the button
 import { apiService } from "../../services/api"
 
@@ -42,7 +42,8 @@ interface Order {
 }
 
 export default function OrderTrackingPage() {
-  const [orderNumber, setOrderNumber] = useState("")
+  const { orderNumber: urlOrderNumber } = useParams<{ orderNumber: string }>()
+  const [orderNumber, setOrderNumber] = useState(urlOrderNumber || "")
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,9 +56,9 @@ export default function OrderTrackingPage() {
         const response = await apiService.getSiteContent();
         if (response.success && response.content?.contact?.contactInfo) {
           const contactInfo = response.content.contact.contactInfo;
-          // Buscar tanto por 'Teléfono' como por 'Whatsapp'
+          // Buscar por 'Whatsapp'
           const phoneInfo = contactInfo.find((info: { title: string; details: string[] }) =>
-            info.title.toLowerCase() === "teléfono" || info.title.toLowerCase() === "whatsapp"
+            info.title.toLowerCase() === "whatsapp"
           );
           if (phoneInfo && Array.isArray(phoneInfo.details) && phoneInfo.details[0]) {
             // Clean up the phone number for WhatsApp (remove spaces, dashes, etc)
@@ -73,8 +74,18 @@ export default function OrderTrackingPage() {
     fetchContactPhone();
   }, []);
 
-  const handleTrackOrder = async () => {
-    if (!orderNumber.trim()) {
+  // Cargar orden automáticamente si se accede desde URL con parámetro
+  useEffect(() => {
+    if (urlOrderNumber) {
+      setOrderNumber(urlOrderNumber);
+      handleTrackOrder(urlOrderNumber);
+    }
+  }, [urlOrderNumber]);
+
+  const handleTrackOrder = async (orderNumberParam?: string) => {
+    const orderToTrack = orderNumberParam || orderNumber;
+    
+    if (!orderToTrack.trim()) {
       setError("Por favor, ingresa un número de pedido.")
       setOrder(null)
       return
@@ -86,7 +97,7 @@ export default function OrderTrackingPage() {
 
     try {
       // Buscar por numeroOrden
-      const response = await apiService.get(`/orders/by-number/${orderNumber.trim()}`)
+      const response = await apiService.get(`/orders/by-number/${orderToTrack.trim()}`)
       if (response.success && response.order) {
         setOrder(response.order)
       } else {
@@ -98,6 +109,10 @@ export default function OrderTrackingPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleTrackOrderClick = () => {
+    handleTrackOrder();
   }
 
   // Determinar si las opciones de contacto deben mostrarse
@@ -155,7 +170,7 @@ export default function OrderTrackingPage() {
               />
             </div>
             <button
-              onClick={handleTrackOrder}
+                              onClick={handleTrackOrderClick}
               disabled={loading}
               className="w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl text-white text-xs sm:text-sm font-medium uppercase tracking-wider shadow-warm-lg transition-all hover:scale-105 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(90deg, #333 0%, #000 100%)" }}

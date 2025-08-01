@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { apiService } from "../../services/api"
+import toast from "react-hot-toast"
 
 interface Order {
   _id: string
@@ -69,13 +70,21 @@ interface OrderStats {
   total: number
   revenue: number
   byStatusAndPaymentMethod: {
-    pending_manual: { cash: number; transfer: number }
-    pending_transfer_proof: { cash: number; transfer: number }
-    pending_transfer_confirmation: { cash: number; transfer: number }
-    paid: { cash: number; transfer: number }
-    cancelled: { cash: number; transfer: number }
-    refunded: { cash: number; transfer: number }
+    // Estados en español (nuevos)
+    pendiente_manual: { cash: number; transfer: number }
+    pendiente_comprobante_transferencia: { cash: number; transfer: number }
+    pendiente_confirmacion_transferencia: { cash: number; transfer: number }
+    pagado: { cash: number; transfer: number }
+    cancelado: { cash: number; transfer: number }
+    reembolsado: { cash: number; transfer: number }
     confirmado: { cash: number; transfer: number }
+    // Estados en inglés (legacy - para compatibilidad)
+    pending_manual?: { cash: number; transfer: number }
+    pending_transfer_proof?: { cash: number; transfer: number }
+    pending_transfer_confirmation?: { cash: number; transfer: number }
+    paid?: { cash: number; transfer: number }
+    cancelled?: { cash: number; transfer: number }
+    refunded?: { cash: number; transfer: number }
   }
 }
 
@@ -98,12 +107,12 @@ export default function AdminOrders() {
     total: 0,
     revenue: 0,
     byStatusAndPaymentMethod: {
-      pending_manual: { cash: 0, transfer: 0 },
-      pending_transfer_proof: { cash: 0, transfer: 0 },
-      pending_transfer_confirmation: { cash: 0, transfer: 0 },
-      paid: { cash: 0, transfer: 0 },
-      cancelled: { cash: 0, transfer: 0 },
-      refunded: { cash: 0, transfer: 0 },
+      pendiente_manual: { cash: 0, transfer: 0 },
+      pendiente_comprobante_transferencia: { cash: 0, transfer: 0 },
+      pendiente_confirmacion_transferencia: { cash: 0, transfer: 0 },
+      pagado: { cash: 0, transfer: 0 },
+      cancelado: { cash: 0, transfer: 0 },
+      reembolsado: { cash: 0, transfer: 0 },
       confirmado: { cash: 0, transfer: 0 },
     },
   })
@@ -163,7 +172,7 @@ export default function AdminOrders() {
       }
 
       // Set orders data
-      const ordersData = (ordersResponse.orders || []).map((order: any) => ({
+      const ordersData = (ordersResponse.orders || []).map((order: Order) => ({
         ...order,
       }));
       const totalCount = ordersResponse.totalOrders || 0
@@ -179,12 +188,12 @@ export default function AdminOrders() {
           total: summaryResponse.summary.totalOrders || 0,
           revenue: summaryResponse.summary.totalRevenue || 0,
           byStatusAndPaymentMethod: summaryResponse.summary.summaryByStatusAndPaymentMethod || {
-            pending_manual: { cash: 0, transfer: 0 },
-            pending_transfer_proof: { cash: 0, transfer: 0 },
-            pending_transfer_confirmation: { cash: 0, transfer: 0 },
-            paid: { cash: 0, transfer: 0 },
-            cancelled: { cash: 0, transfer: 0 },
-            refunded: { cash: 0, transfer: 0 },
+            pendiente_manual: { cash: 0, transfer: 0 },
+            pendiente_comprobante_transferencia: { cash: 0, transfer: 0 },
+            pendiente_confirmacion_transferencia: { cash: 0, transfer: 0 },
+            pagado: { cash: 0, transfer: 0 },
+            cancelado: { cash: 0, transfer: 0 },
+            reembolsado: { cash: 0, transfer: 0 },
             confirmado: { cash: 0, transfer: 0 },
           },
         })
@@ -197,7 +206,7 @@ export default function AdminOrders() {
 
       // Show user-friendly error
       const errorMessage = error instanceof Error ? error.message : "Error desconocido"
-      alert(`Error al cargar las órdenes: ${errorMessage}`)
+      toast.error(`Error al cargar las órdenes: ${errorMessage}`)
 
       // Reset to safe state
       setOrders([])
@@ -207,12 +216,12 @@ export default function AdminOrders() {
         total: 0,
         revenue: 0,
         byStatusAndPaymentMethod: {
-          pending_manual: { cash: 0, transfer: 0 },
-          pending_transfer_proof: { cash: 0, transfer: 0 },
-          pending_transfer_confirmation: { cash: 0, transfer: 0 },
-          paid: { cash: 0, transfer: 0 },
-          cancelled: { cash: 0, transfer: 0 },
-          refunded: { cash: 0, transfer: 0 },
+          pendiente_manual: { cash: 0, transfer: 0 },
+          pendiente_comprobante_transferencia: { cash: 0, transfer: 0 },
+          pendiente_confirmacion_transferencia: { cash: 0, transfer: 0 },
+          pagado: { cash: 0, transfer: 0 },
+          cancelado: { cash: 0, transfer: 0 },
+          reembolsado: { cash: 0, transfer: 0 },
           confirmado: { cash: 0, transfer: 0 },
         },
       })
@@ -262,15 +271,19 @@ export default function AdminOrders() {
       await loadOrders()
 
       if (selectedOrder && selectedOrder._id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus, adminNotes })
+        setSelectedOrder({ ...selectedOrder, estado: newStatus, notasAdmin: adminNotes })
       }
 
       console.log(`✅ Estado de orden actualizado exitosamente`)
+      // Solo mostrar toast si no es una carga automática
+      if (!loading) {
+        toast.success(`Estado actualizado a "${newStatus}" correctamente`)
+      }
     } catch (error: unknown) {
       // Type 'error' as unknown
       console.error("❌ Error updating order status:", error)
       const errorMessage = error instanceof Error ? error.message : "Error desconocido"
-      alert(`Error al actualizar el estado de la orden: ${errorMessage}`) // Narrow type
+      toast.error(`Error al actualizar estado: ${errorMessage}`)
     } finally {
       setUpdating(false)
     }
@@ -289,12 +302,12 @@ export default function AdminOrders() {
           setShowDetails(false);
           setSelectedOrder(null);
         }
-        alert(`Orden #${orderId} eliminada exitosamente.`);
+        toast.success(`Orden #${orderId} eliminada exitosamente`);
       }
     } catch (error) {
       console.error("❌ Error deleting order:", error);
       const errorMessage = error instanceof Error ? error.message : "Error desconocido";
-      alert(`Error al eliminar la orden: ${errorMessage}`);
+      toast.error(`Error al eliminar la orden: ${errorMessage}`);
     } finally {
       setDeletingOrderId(null);
     }
@@ -401,26 +414,64 @@ export default function AdminOrders() {
     return matchesSearch && matchesDate
   })
 
+  // Función helper para manejar compatibilidad entre estados antiguos y nuevos
+  const getOrderStats = (orderStats: OrderStats) => {
+    const stats = orderStats.byStatusAndPaymentMethod;
+    
+    return {
+      pendiente_manual: {
+        cash: stats.pendiente_manual?.cash || stats.pending_manual?.cash || 0,
+        transfer: stats.pendiente_manual?.transfer || stats.pending_manual?.transfer || 0,
+      },
+      pendiente_comprobante_transferencia: {
+        cash: stats.pendiente_comprobante_transferencia?.cash || stats.pending_transfer_proof?.cash || 0,
+        transfer: stats.pendiente_comprobante_transferencia?.transfer || stats.pending_transfer_proof?.transfer || 0,
+      },
+      pendiente_confirmacion_transferencia: {
+        cash: stats.pendiente_confirmacion_transferencia?.cash || stats.pending_transfer_confirmation?.cash || 0,
+        transfer: stats.pendiente_confirmacion_transferencia?.transfer || stats.pending_transfer_confirmation?.transfer || 0,
+      },
+      pagado: {
+        cash: stats.pagado?.cash || stats.paid?.cash || 0,
+        transfer: stats.pagado?.transfer || stats.paid?.transfer || 0,
+      },
+      cancelado: {
+        cash: stats.cancelado?.cash || stats.cancelled?.cash || 0,
+        transfer: stats.cancelado?.transfer || stats.cancelled?.transfer || 0,
+      },
+      reembolsado: {
+        cash: stats.reembolsado?.cash || stats.refunded?.cash || 0,
+        transfer: stats.reembolsado?.transfer || stats.refunded?.transfer || 0,
+      },
+      confirmado: {
+        cash: stats.confirmado?.cash || 0,
+        transfer: stats.confirmado?.transfer || 0,
+      },
+    };
+  };
+
   // Function to render payment method summary cards
   const renderPaymentMethodCards = () => {
+    const normalizedStats = getOrderStats(orderStats);
+    
     const cashStats = {
-      pendiente_manual: orderStats.byStatusAndPaymentMethod.pending_manual.cash,
-      pendiente_comprobante_transferencia: orderStats.byStatusAndPaymentMethod.pending_transfer_proof.cash,
-      pendiente_confirmacion_transferencia: orderStats.byStatusAndPaymentMethod.pending_transfer_confirmation.cash,
-      pagado: orderStats.byStatusAndPaymentMethod.paid.cash,
-      cancelado: orderStats.byStatusAndPaymentMethod.cancelled.cash,
-      reembolsado: orderStats.byStatusAndPaymentMethod.refunded.cash,
-      confirmado: orderStats.byStatusAndPaymentMethod.confirmado.cash,
+      pendiente_manual: normalizedStats.pendiente_manual.cash,
+      pendiente_comprobante_transferencia: normalizedStats.pendiente_comprobante_transferencia.cash,
+      pendiente_confirmacion_transferencia: normalizedStats.pendiente_confirmacion_transferencia.cash,
+      pagado: normalizedStats.pagado.cash,
+      cancelado: normalizedStats.cancelado.cash,
+      reembolsado: normalizedStats.reembolsado.cash,
+      confirmado: normalizedStats.confirmado.cash,
     }
 
     const transferStats = {
-      pendiente_manual: orderStats.byStatusAndPaymentMethod.pending_manual.transfer,
-      pendiente_comprobante_transferencia: orderStats.byStatusAndPaymentMethod.pending_transfer_proof.transfer,
-      pendiente_confirmacion_transferencia: orderStats.byStatusAndPaymentMethod.pending_transfer_confirmation.transfer,
-      pagado: orderStats.byStatusAndPaymentMethod.paid.transfer,
-      cancelado: orderStats.byStatusAndPaymentMethod.cancelled.transfer,
-      reembolsado: orderStats.byStatusAndPaymentMethod.refunded.transfer,
-      confirmado: orderStats.byStatusAndPaymentMethod.confirmado.transfer,
+      pendiente_manual: normalizedStats.pendiente_manual.transfer,
+      pendiente_comprobante_transferencia: normalizedStats.pendiente_comprobante_transferencia.transfer,
+      pendiente_confirmacion_transferencia: normalizedStats.pendiente_confirmacion_transferencia.transfer,
+      pagado: normalizedStats.pagado.transfer,
+      cancelado: normalizedStats.cancelado.transfer,
+      reembolsado: normalizedStats.reembolsado.transfer,
+      confirmado: normalizedStats.confirmado.transfer,
     }
 
     const cashTotal = Object.values(cashStats).reduce((sum, count) => sum + count, 0)
@@ -608,23 +659,9 @@ export default function AdminOrders() {
   }
 
   // Mapeo seguro para detalles de orden
-  let orderDetails: (Order & { orderNumber: string; shippingInfo: any }) | null = null;
+  let orderDetails: Order | null = null;
   if (showDetails && selectedOrder) {
-    const o = selectedOrder as Order;
-    orderDetails = {
-      ...o,
-      orderNumber: o.numeroOrden || o._id,
-      shippingInfo: o.infoEnvio
-        ? {
-            ...o.infoEnvio,
-            fullName: o.infoEnvio.nombreCompleto || "",
-            email: o.infoEnvio.correo || "",
-            phone: o.infoEnvio.telefono || "",
-            address: o.infoEnvio.direccion || "",
-            city: o.infoEnvio.ciudad || "",
-          }
-        : o.infoEnvio || {},
-    };
+    orderDetails = selectedOrder;
   }
 
   return (
@@ -680,9 +717,9 @@ export default function AdminOrders() {
                 <TrendingUp className="h-6 w-6 text-emerald-400" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-white">
-                  {orderStats.byStatusAndPaymentMethod.paid.cash + orderStats.byStatusAndPaymentMethod.paid.transfer}
-                </p>
+                                  <p className="text-2xl font-bold text-white">
+                    {getOrderStats(orderStats).pagado.cash + getOrderStats(orderStats).pagado.transfer}
+                  </p>
                 <p className="text-sm text-emerald-300 font-medium">Órdenes Completadas</p>
               </div>
             </div>
@@ -740,6 +777,7 @@ export default function AdminOrders() {
             <button
               onClick={async () => {
                 console.log("🔄 Refresh manual iniciado")
+                
                 // Clear API cache first
                 apiService.clearCache()
 
@@ -833,6 +871,18 @@ export default function AdminOrders() {
                             <Eye className="h-4 w-4 mr-1" />
                             Ver Detalles
                           </Link>
+                          
+                          {/* Botón Pagado - solo visible cuando el estado es "confirmado" */}
+                          {order.estado === "confirmado" && (
+                            <button
+                              onClick={() => updateOrderStatus(order._id, "pagado")}
+                              className="inline-flex items-center px-3 py-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 rounded-lg hover:bg-emerald-600/30 transition-all duration-200 text-sm font-medium"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Pagado
+                            </button>
+                          )}
+                          
                           <button
                             onClick={() => deleteOrder(order._id)}
                             disabled={!!deletingOrderId && deletingOrderId === order._id}
@@ -913,7 +963,7 @@ export default function AdminOrders() {
           <div className="admin-modal-backdrop">
             <div className="admin-modal max-w-4xl">
               <div className="admin-modal-header">
-                <h3 className="text-lg font-medium text-white">Orden #{orderDetails.orderNumber}</h3>
+                <h3 className="text-lg font-medium text-white">Orden #{orderDetails.numeroOrden}</h3>
                 <button
                   onClick={() => setShowDetails(false)}
                   className="text-gray-400 hover:text-white transition-colors duration-200 text-2xl"
